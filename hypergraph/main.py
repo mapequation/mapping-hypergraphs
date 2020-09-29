@@ -37,9 +37,9 @@ def create_multilayer_network(edges, nodes, p):
         # layer_id node_id layer_id node_id weight
         links.append((e1.id, u.id, e2.id, v.id, w))
 
-    return [link
+    return [((e1, u), (e2, v), w)
             for links in (intra, inter)
-            for link in sorted(links, key=lambda link: link[0])]
+            for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
 
 
 
@@ -57,8 +57,8 @@ def main(filename):
     for node in nodes:
         im.set_name(node.id, node.name)
 
-    for e1, u, e2, v, w in links:
-        im.add_multilayer_link((e1, u), (e2, v), w)
+    for source, target, w in links:
+        im.add_multilayer_link(source, target, w)
 
     im.run()
 
