@@ -3,9 +3,8 @@ from itertools import product
 
 from infomap import Infomap
 
-from hypergraph.io import read_lines
-from hypergraph.parse import parse
-from hypergraph.prob import p
+from hypergraph.io import read_lines, parse
+from hypergraph.transition import p
 
 
 def create_multilayer_network(nodes, edges, p):
@@ -45,9 +44,7 @@ def create_multilayer_network(nodes, edges, p):
 
 def main(filename):
     with open(filename, "r") as fp:
-        data = read_lines(fp.read())
-
-    nodes, edges, weights = parse(data)
+        nodes, edges, weights = parse(read_lines(fp.read()))
 
     P = partial(p, edges, weights, shifted=True)
 
