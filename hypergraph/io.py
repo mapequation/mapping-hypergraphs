@@ -1,8 +1,8 @@
 from collections import namedtuple
 
 
-def read_lines(data):
-    lines = (line.strip() for line in data.split("\n"))
+def read(lines):
+    lines = (line.strip() for line in lines)
     lines = (line for line in lines if not line.startswith("#"))
 
     nodes = []
@@ -36,7 +36,7 @@ HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
 Weight = namedtuple("Weight", "edge, node, gamma")
 
 
-def parse_vertices(lines):
+def parse_nodes(lines):
     lines = (line.split() for line in lines)
 
     return (Node(int(node_id), name.strip("\""))
@@ -60,7 +60,7 @@ def parse_weights(lines):
 def parse(data):
     nodes_lines, edges_lines, weights_lines = data
 
-    nodes = parse_vertices(nodes_lines)
+    nodes = parse_nodes(nodes_lines)
     edges = parse_edges(edges_lines)
     weights = parse_weights(weights_lines)
 

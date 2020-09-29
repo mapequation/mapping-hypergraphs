@@ -3,7 +3,7 @@ from itertools import product
 
 from infomap import Infomap
 
-from hypergraph.io import read_lines, parse
+from hypergraph.io import read, parse
 from hypergraph.transition import p
 
 
@@ -29,13 +29,12 @@ def create_multilayer_network(nodes, edges, p):
             else:
                 links = inter
 
+            # layer_id node_id layer_id node_id weight
             links.append((e1.id, u.id, e2.id, v.id, w))
-            # print(e1.id, e2.id, u.name, v.name, w)
 
     links = []
 
     for link_type in (intra, inter):
-        # layer_id node_id layer_id node_id weight
         by_layer_id = lambda link: link[0]
         links.extend(link for link in sorted(link_type, key=by_layer_id))
 
@@ -44,7 +43,7 @@ def create_multilayer_network(nodes, edges, p):
 
 def main(filename):
     with open(filename, "r") as fp:
-        nodes, edges, weights = parse(read_lines(fp.read()))
+        nodes, edges, weights = parse(read(fp.readlines()))
 
     P = partial(p, edges, weights, shifted=True)
 
