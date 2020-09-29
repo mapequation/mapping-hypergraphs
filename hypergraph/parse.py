@@ -1,4 +1,8 @@
-from hypergraph.types import Node, HyperEdge, Weight
+from collections import namedtuple
+
+Node = namedtuple("Node", "id, name")
+HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
+Weight = namedtuple("Weight", "edge, node, gamma")
 
 
 def parse_vertices(lines):
@@ -8,7 +12,7 @@ def parse_vertices(lines):
             for node_id, name in lines)
 
 
-def parse_hyperedges(lines):
+def parse_edges(lines):
     lines = (map(int, line.split()) for line in lines)
 
     return (HyperEdge(edge_id, set(nodes), omega)
@@ -23,10 +27,10 @@ def parse_weights(lines):
 
 
 def parse(data):
-    nodes_lines, hyperedges_lines, weights_lines = data
+    nodes_lines, edges_lines, weights_lines = data
 
     nodes = parse_vertices(nodes_lines)
-    hyperedges = parse_hyperedges(hyperedges_lines)
+    edges = parse_edges(edges_lines)
     weights = parse_weights(weights_lines)
 
-    return list(nodes), list(hyperedges), list(weights)
+    return list(nodes), list(edges), list(weights)

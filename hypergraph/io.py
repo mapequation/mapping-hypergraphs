@@ -2,13 +2,13 @@ def read_lines(data):
     lines = (line.strip() for line in data.split("\n"))
     lines = (line for line in lines if not line.startswith("#"))
 
-    vertices = []
-    hyperedges = []
+    nodes = []
+    edges = []
     weights = []
 
     contexts = {
-        "vertices": "*vertices",
-        "hyperedges": "*hyperedges",
+        "nodes": "*vertices",
+        "edges": "*hyperedges",
         "weights": "*weights"
     }
 
@@ -18,11 +18,11 @@ def read_lines(data):
         if line.startswith('*'):
             context = line.lower()
             continue
-        elif context == contexts["vertices"]:
-            vertices.append(line)
-        elif context == contexts["hyperedges"]:
-            hyperedges.append(line)
+        elif context == contexts["nodes"]:
+            nodes.append(line)
+        elif context == contexts["edges"]:
+            edges.append(line)
         elif context == contexts["weights"]:
             weights.append(line)
 
-    return vertices, hyperedges, weights
+    return nodes, edges, weights
