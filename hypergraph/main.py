@@ -14,8 +14,7 @@ def create_multilayer_network(nodes, edges, p):
 
     for e1, e2 in product(edges, edges):
         for u_id, v_id in product(e1.nodes, e2.nodes):
-            if e1 == e2 and u_id == v_id or \
-                    u_id == v_id:
+            if u_id == v_id:
                 continue
 
             u = next(node for node in nodes if node.id == u_id)
