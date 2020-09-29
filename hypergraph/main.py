@@ -4,7 +4,7 @@ from itertools import product
 
 from infomap import Infomap
 
-from hypergraph.io import read, parse
+from hypergraph.io import read, parse, Node
 from hypergraph.transition import p
 
 
@@ -61,6 +61,26 @@ def create_state_network(node_pairs):
     return states, links
 
 
+def create_bipartite_network(edges, nodes, p):
+    bipartite_start_id = max(node.id for node in nodes) + 1
+
+    features = [Node(bipartite_start_id + i, "Hyperedge {}".format(i + 1))
+                for i in range(len(edges))]
+
+    edge_to_feature_id = {edge.id: bipartite_start_id + i
+                          for i, edge in enumerate(edges)}
+
+    links = []
+
+    for e1, u, e2, v, w in each_node_pair(edges, nodes, p):
+        feature_id = edge_to_feature_id[e2.id]
+
+        links.append((u.id, feature_id, w))
+        links.append((feature_id, v.id, w))
+
+    return bipartite_start_id, features, links
+
+
 def main(filename):
     with open(filename, "r") as fp:
         nodes, edges, weights = parse(read(fp.readlines()))
@@ -70,7 +90,7 @@ def main(filename):
 
     links = create_multilayer_network(node_pairs)
 
-    im = Infomap("--directed -N5")
+    im = Infomap("-d -N5")
     im.set_names(nodes)
     im.add_multilayer_links(links)
     im.run()
@@ -78,12 +98,21 @@ def main(filename):
 
     states, links = create_state_network(node_pairs)
 
-    im = Infomap("--directed -N5")
+    im = Infomap("-d -N5")
     im.set_names(nodes)
     im.add_state_nodes(states)
     im.add_links(links)
     im.run()
     im.write_flow_tree("states.ftree", states=True)
+
+    bipartite_start_id, features, links = create_bipartite_network(edges, nodes, P)
+    im = Infomap("-d -N5")
+    im.set_names(nodes)
+    im.bipartite_start_id = bipartite_start_id - 1  # FIXME bug?
+    im.add_nodes(features)
+    im.add_links(links)
+    im.run()
+    im.write_flow_tree("bipartite.ftree")
 
 
 if __name__ == "__main__":
