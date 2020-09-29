@@ -34,14 +34,20 @@ def gamma(e: HyperEdge, v: Node, weights: Iterable[Weight]):
 def p(u: Node, e1: HyperEdge,
       v: Node, e2: HyperEdge,
       weights: Iterable[Weight],
-      edges: Iterable[HyperEdge]):
+      edges: Iterable[HyperEdge],
+      shifted=True):
     gamma_ev = lambda e, v: gamma(e, v, weights)
     delta_e = lambda e: delta(e, weights)
     d_v = lambda v: d(v, edges)
     omega = lambda e: e.omega
 
-    step_1 = gamma_ev(e1, v) / (delta_e(e1) - gamma_ev(e1, u))
-    step_2 = omega(e2) / d_v(v)
+    if shifted:
+        step_1 = gamma_ev(e1, v) / (delta_e(e1) - gamma_ev(e1, u))
+        step_2 = omega(e2) / d_v(v)
+
+    else:
+        step_1 = gamma_ev(e2, v) / (delta_e(e2) - gamma_ev(e2, u))
+        step_2 = omega(e2) / d_v(u)
 
     return step_1 * step_2
 
