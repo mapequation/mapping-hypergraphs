@@ -61,7 +61,7 @@ def create_state_network(node_pairs):
     return states, links
 
 
-def create_bipartite_network(edges, nodes, p):
+def create_bipartite_network(edges, nodes, node_pairs):
     bipartite_start_id = max(node.id for node in nodes) + 1
 
     features = [Node(bipartite_start_id + i, "Hyperedge {}".format(i + 1))
@@ -72,7 +72,7 @@ def create_bipartite_network(edges, nodes, p):
 
     links = []
 
-    for e1, u, e2, v, w in each_node_pair(edges, nodes, p):
+    for e1, u, e2, v, w in node_pairs:
         feature_id = edge_to_feature_id[e2.id]
 
         links.append((u.id, feature_id, w))
@@ -81,11 +81,10 @@ def create_bipartite_network(edges, nodes, p):
     return bipartite_start_id, features, links
 
 
-def main(filename):
-    with open(filename, "r") as fp:
-        nodes, edges, weights = parse(read(fp.readlines()))
+def main(file, shifted=False):
+    nodes, edges, weights = parse(read(file.readlines()))
 
-    P = partial(p, edges, weights, shifted=True)
+    P = partial(p, edges, weights, shifted=shifted)
     node_pairs = list(each_node_pair(edges, nodes, P))
 
     links = create_multilayer_network(node_pairs)
@@ -105,7 +104,8 @@ def main(filename):
     im.run()
     im.write_flow_tree("states.ftree", states=True)
 
-    bipartite_start_id, features, links = create_bipartite_network(edges, nodes, P)
+    bipartite_start_id, features, links = create_bipartite_network(edges, nodes, node_pairs)
+
     im = Infomap("-d -N5")
     im.set_names(nodes)
     im.bipartite_start_id = bipartite_start_id - 1  # FIXME bug?
@@ -113,7 +113,3 @@ def main(filename):
     im.add_links(links)
     im.run()
     im.write_flow_tree("bipartite.ftree")
-
-
-if __name__ == "__main__":
-    main("data.txt")

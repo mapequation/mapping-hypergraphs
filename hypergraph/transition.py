@@ -37,7 +37,7 @@ def p(edges: Iterable[HyperEdge],
       e1: HyperEdge,
       v: Node,
       e2: HyperEdge,
-      shifted=True):
+      shifted=False):
     gamma_ev = partial(gamma, weights)
     delta_e = partial(delta, weights)
     d_v = partial(d, edges)
