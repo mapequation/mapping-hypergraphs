@@ -37,13 +37,11 @@ def create_multilayer_network(edges, nodes, p):
         # layer_id node_id layer_id node_id weight
         links.append((e1.id, u.id, e2.id, v.id, w))
 
-    links = []
+    return [link
+            for links in (intra, inter)
+            for link in sorted(links, key=lambda link: link[0])]
 
-    for link_type in (intra, inter):
-        by_layer_id = lambda link: link[0]
-        links.extend(link for link in sorted(link_type, key=by_layer_id))
 
-    return links
 
 
 def main(filename):
