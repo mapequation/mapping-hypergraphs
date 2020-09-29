@@ -7,12 +7,7 @@ from hypergraph.io import read, parse
 from hypergraph.transition import p
 
 
-def create_multilayer_network(nodes, edges, weights):
-    intra = []
-    inter = []
-
-    P = partial(p, edges, weights, shifted=True)
-
+def each_node_pair(edges, nodes):
     for e1, e2 in product(edges, edges):
         for u_id, v_id in product(e1.nodes, e2.nodes):
             if u_id == v_id:
@@ -21,18 +16,26 @@ def create_multilayer_network(nodes, edges, weights):
             u = next(node for node in nodes if node.id == u_id)
             v = next(node for node in nodes if node.id == v_id)
 
-            w = P(u, e1, v, e2)
+            yield e1, u, e2, v
 
-            if w < 1e-10:
-                continue
 
-            if e1 == e2:
-                links = intra
-            else:
-                links = inter
+def create_multilayer_network(edges, nodes, p):
+    intra = []
+    inter = []
 
-            # layer_id node_id layer_id node_id weight
-            links.append((e1.id, u.id, e2.id, v.id, w))
+    for e1, u, e2, v in each_node_pair(edges, nodes):
+        w = p(u, e1, v, e2)
+
+        if w < 1e-10:
+            continue
+
+        if e1 == e2:
+            links = intra
+        else:
+            links = inter
+
+        # layer_id node_id layer_id node_id weight
+        links.append((e1.id, u.id, e2.id, v.id, w))
 
     links = []
 
@@ -47,7 +50,9 @@ def main(filename):
     with open(filename, "r") as fp:
         nodes, edges, weights = parse(read(fp.readlines()))
 
-    links = create_multilayer_network(nodes, edges, weights)
+    P = partial(p, edges, weights, shifted=True)
+
+    links = create_multilayer_network(edges, nodes, P)
 
     im = Infomap("--directed -N5")
 
