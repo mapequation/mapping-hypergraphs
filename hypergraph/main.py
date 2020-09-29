@@ -7,9 +7,11 @@ from hypergraph.io import read, parse
 from hypergraph.transition import p
 
 
-def create_multilayer_network(nodes, edges, p):
+def create_multilayer_network(nodes, edges, weights):
     intra = []
     inter = []
+
+    P = partial(p, edges, weights, shifted=True)
 
     for e1, e2 in product(edges, edges):
         for u_id, v_id in product(e1.nodes, e2.nodes):
@@ -19,7 +21,7 @@ def create_multilayer_network(nodes, edges, p):
             u = next(node for node in nodes if node.id == u_id)
             v = next(node for node in nodes if node.id == v_id)
 
-            w = p(u, e1, v, e2)
+            w = P(u, e1, v, e2)
 
             if w < 1e-10:
                 continue
@@ -45,9 +47,7 @@ def main(filename):
     with open(filename, "r") as fp:
         nodes, edges, weights = parse(read(fp.readlines()))
 
-    P = partial(p, edges, weights, shifted=True)
-
-    links = create_multilayer_network(nodes, edges, P)
+    links = create_multilayer_network(nodes, edges, weights)
 
     im = Infomap("--directed -N5")
 

@@ -43,10 +43,16 @@ def p(edges: Iterable[HyperEdge],
     d_v = partial(d, edges)
 
     if shifted:
+        if v.id not in e1.nodes:
+            return 0
+
         step_1 = gamma_ev(e1, v) / (delta_e(e1) - gamma_ev(e1, u))
         step_2 = e2.omega / d_v(v)
 
     else:
+        if u.id not in e2.nodes:
+            return 0
+
         step_1 = gamma_ev(e2, v) / (delta_e(e2) - gamma_ev(e2, u))
         step_2 = e2.omega / d_v(u)
 
