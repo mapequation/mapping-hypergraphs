@@ -7,10 +7,10 @@ from hypergraph.parse import Node, HyperEdge, Weight
 def E(edges: Iterable[HyperEdge], v: Node, u: Node = None):
     if not u:
         return {edge.id for edge in edges
-                if v.id in edge.nodes}
+                if v in edge.nodes}
 
     return {edge.id for edge in edges
-            if {u.id, v.id} <= edge.nodes}
+            if {u, v} <= edge.nodes}
 
 
 def d(edges: Iterable[HyperEdge], v: Node):
@@ -28,7 +28,7 @@ def delta(weights: Iterable[Weight], e: HyperEdge):
 def gamma(weights: Iterable[Weight], e: HyperEdge, v: Node):
     return next((weight.gamma for weight in weights
                  if weight.edge == e.id
-                 and weight.node == v.id), 0)
+                 and weight.node == v), 0)
 
 
 def p(edges: Iterable[HyperEdge],
@@ -43,14 +43,14 @@ def p(edges: Iterable[HyperEdge],
     d_v = partial(d, edges)
 
     if shifted:
-        if v.id not in e1.nodes:
+        if v not in e1.nodes:
             return 0
 
         step_1 = gamma_ev(e1, v) / (delta_e(e1) - gamma_ev(e1, u))
         step_2 = e2.omega / d_v(v)
 
     else:
-        if u.id not in e2.nodes:
+        if u not in e2.nodes:
             return 0
 
         step_1 = gamma_ev(e2, v) / (delta_e(e2) - gamma_ev(e2, u))

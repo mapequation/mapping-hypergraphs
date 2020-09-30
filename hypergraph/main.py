@@ -10,12 +10,9 @@ from hypergraph.transition import p
 
 def each_node_pair(edges, nodes, p):
     for e1, e2 in product(edges, edges):
-        for u_id, v_id in product(e1.nodes, e2.nodes):
-            if u_id == v_id:
+        for u, v in product(e1.nodes, e2.nodes):
+            if u == v:
                 continue
-
-            u = next(node for node in nodes if node.id == u_id)
-            v = next(node for node in nodes if node.id == v_id)
 
             w = p(u, e1, v, e2)
 

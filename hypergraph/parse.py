@@ -1,4 +1,6 @@
+import re
 from collections import namedtuple
+from typing import Dict
 
 
 def read(lines):
@@ -37,31 +39,37 @@ Weight = namedtuple("Weight", "edge, node, gamma")
 
 
 def parse_nodes(lines):
-    lines = (line.split() for line in lines)
+    nodes = {}
 
-    return (Node(int(node_id), name.strip("\""))
-            for node_id, name in lines)
+    for line in lines:
+        m = re.match(r"(\d+) \"(.+)\"", line)
+        if m:
+            node_id, name = m.groups()
+            node_id = int(node_id)
+            nodes[node_id] = Node(node_id, name)
+
+    return nodes
 
 
-def parse_edges(lines):
+def parse_edges(lines, nodes: Dict[int, Node]):
     lines = (map(int, line.split()) for line in lines)
 
-    return (HyperEdge(edge_id, set(nodes), omega)
-            for edge_id, *nodes, omega in lines)
+    return (HyperEdge(edge_id, set(nodes[node_id] for node_id in node_ids), omega)
+            for edge_id, *node_ids, omega in lines)
 
 
-def parse_weights(lines):
+def parse_weights(lines, nodes: Dict[int, Node]):
     lines = (map(int, line.split()) for line in lines)
 
-    return (Weight(edge, node, gamma)
-            for edge, node, gamma in lines)
+    return (Weight(edge, nodes[node_id], gamma)
+            for edge, node_id, gamma in lines)
 
 
 def parse(data):
     nodes_lines, edges_lines, weights_lines = data
 
     nodes = parse_nodes(nodes_lines)
-    edges = parse_edges(edges_lines)
-    weights = parse_weights(weights_lines)
+    edges = parse_edges(edges_lines, nodes)
+    weights = parse_weights(weights_lines, nodes)
 
-    return list(nodes), list(edges), list(weights)
+    return list(nodes.values()), list(edges), list(weights)
