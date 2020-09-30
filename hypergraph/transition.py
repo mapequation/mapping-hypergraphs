@@ -1,9 +1,11 @@
+from collections import defaultdict
 from typing import Iterable
 
 from hypergraph.parse import Node, HyperEdge, Weight
 
 
 def E(edges: Iterable[HyperEdge]):
+    print("[E]: pre-calculating... ", end="")
     edges_ = defaultdict(list)
 
     for edge, nodes, _ in edges:
@@ -11,6 +13,7 @@ def E(edges: Iterable[HyperEdge]):
             edges_[node.id].append(edge)
 
     edges_ = dict(edges_)
+    print("done")
 
     def inner(v: Node, u: Node = None):
         if not u:
@@ -33,12 +36,15 @@ def d(edges: Iterable[HyperEdge]):
 
 
 def delta(weights: Iterable[Weight]):
+    print("[delta]: pre-calculating... ", end="")
     gamma_tot = {}
 
     for weight in weights:
         if weight.edge not in gamma_tot:
             gamma_tot[weight.edge] = 0
         gamma_tot[weight.edge] += weight.gamma
+
+    print("done")
 
     def inner(e: HyperEdge):
         return gamma_tot[e.id]
@@ -47,8 +53,10 @@ def delta(weights: Iterable[Weight]):
 
 
 def gamma(weights: Iterable[Weight]):
+    print("[gamma]: pre-calculating... ", end="")
     gamma_ = {(weight.edge, weight.node.id): weight.gamma
               for weight in weights}
+    print("done")
 
     def inner(e: HyperEdge, v: Node):
         return gamma_[e.id, v.id]

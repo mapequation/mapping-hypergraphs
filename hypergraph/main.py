@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import partial
 from itertools import product
 
 from infomap import Infomap
@@ -9,6 +8,8 @@ from hypergraph.transition import p
 
 
 def each_node_pair(edges, nodes, p):
+    print("[node pair]: creating links... ", end="")
+
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
             if u == v:
@@ -20,6 +21,8 @@ def each_node_pair(edges, nodes, p):
                 continue
 
             yield e1, u, e2, v, w
+
+    print("done")
 
 
 def create_multilayer_network(node_pairs):
