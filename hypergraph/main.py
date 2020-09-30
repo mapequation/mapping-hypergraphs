@@ -4,7 +4,7 @@ from itertools import product
 
 from infomap import Infomap
 
-from hypergraph.io import read, parse, Node
+from hypergraph.parse import read, parse, Node
 from hypergraph.transition import p
 
 
