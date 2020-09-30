@@ -68,15 +68,15 @@ def parse_weights(lines, nodes: Dict[int, Node]):
 def parse(data):
     nodes_lines, edges_lines, weights_lines = data
 
-    print("[parse]: parsing nodes... ", end="")
+    print("[parse] parsing nodes... ", end="")
     nodes = parse_nodes(nodes_lines)
     print("done")
 
-    print("[parse]: parsing edges... ", end="")
+    print("[parse] parsing edges... ", end="")
     edges = parse_edges(edges_lines, nodes)
     print("done")
 
-    print("[parse]: parsing weights... ", end="")
+    print("[parse] parsing weights... ", end="")
     weights = parse_weights(weights_lines, nodes)
     print("done")
 

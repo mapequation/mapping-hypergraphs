@@ -5,7 +5,7 @@ from hypergraph.parse import Node, HyperEdge, Weight
 
 
 def E(edges: Iterable[HyperEdge]):
-    print("[E]: pre-calculating... ", end="")
+    print("[E] pre-calculating... ", end="")
     edges_ = defaultdict(list)
 
     for edge, nodes, _ in edges:
@@ -36,7 +36,7 @@ def d(edges: Iterable[HyperEdge]):
 
 
 def delta(weights: Iterable[Weight]):
-    print("[delta]: pre-calculating... ", end="")
+    print("[delta] pre-calculating... ", end="")
     gamma_tot = {}
 
     for weight in weights:
@@ -53,7 +53,7 @@ def delta(weights: Iterable[Weight]):
 
 
 def gamma(weights: Iterable[Weight]):
-    print("[gamma]: pre-calculating... ", end="")
+    print("[gamma] pre-calculating... ", end="")
     gamma_ = {(weight.edge, weight.node.id): weight.gamma
               for weight in weights}
     print("done")

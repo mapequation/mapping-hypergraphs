@@ -8,7 +8,7 @@ from hypergraph.transition import p
 
 
 def create_links(edges, p):
-    print("[links]: creating links... ", end="")
+    print("[links] creating links... ", end="")
 
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
@@ -29,6 +29,7 @@ def create_multilayer_network(node_pairs):
     intra = []
     inter = []
 
+    print("[multilayer] creating multilayer... ", end="")
     for e1, u, e2, v, w in node_pairs:
         if e1 == e2:
             links = intra
@@ -38,9 +39,12 @@ def create_multilayer_network(node_pairs):
         # layer_id node_id layer_id node_id weight
         links.append((e1.id, u.id, e2.id, v.id, w))
 
-    return [((e1, u), (e2, v), w)
-            for links in (intra, inter)
-            for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
+    links = [((e1, u), (e2, v), w)
+             for links in (intra, inter)
+             for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
+
+    print("done")
+    return links
 
 
 def create_state_network(node_pairs):
@@ -62,6 +66,7 @@ def create_state_network(node_pairs):
 
 
 def create_bipartite_network(edges, nodes, node_pairs):
+    print("[bipartite] creating bipartite... ", end="")
     bipartite_start_id = max(node.id for node in nodes) + 1
 
     features = [Node(bipartite_start_id + i, "Hyperedge {}".format(i + 1))
@@ -78,37 +83,36 @@ def create_bipartite_network(edges, nodes, node_pairs):
         links.append((u.id, feature_id, w))
         links.append((feature_id, v.id, w))
 
+    print("done")
     return bipartite_start_id, features, links
 
 
 def main(file, shifted=False):
+    print("[main] starting...")
     nodes, edges, weights = parse(read(file.readlines()))
 
     hypergraph_links = list(create_links(edges, p(edges, weights, shifted)))
 
     links = create_multilayer_network(hypergraph_links)
 
-    im = Infomap("-d -N5")
+    print("[infomap] running infomap on multilayer network... ", end="")
+    im = Infomap("-d -N5 --silent")
     im.set_names(nodes)
     im.add_multilayer_links(links)
     im.run()
     im.write_flow_tree("output/multilayer.ftree", states=True)
+    print("done")
+    print("[infomap] codelength {}".format(im.codelength))
 
-    states, links = create_state_network(node_pairs)
+    bipartite_start_id, features, links = create_bipartite_network(edges, nodes, hypergraph_links)
 
-    im = Infomap("-d -N5")
-    im.set_names(nodes)
-    im.add_state_nodes(states)
-    im.add_links(links)
-    im.run()
-    im.write_flow_tree("output/states.ftree", states=True)
-
-    bipartite_start_id, features, links = create_bipartite_network(edges, nodes, node_pairs)
-
-    im = Infomap("-d -N5")
+    print("[infomap] running infomap on bipartite network... ", end="")
+    im = Infomap("-d -N5 --silent")
     im.set_names(nodes)
     im.bipartite_start_id = bipartite_start_id - 1  # FIXME bug?
     im.add_nodes(features)
     im.add_links(links)
     im.run()
     im.write_flow_tree("output/bipartite.ftree")
+    print("done")
+    print("[infomap] codelength {}".format(im.codelength))
