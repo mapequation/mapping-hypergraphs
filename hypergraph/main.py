@@ -81,8 +81,7 @@ def create_bipartite_network(edges, nodes, node_pairs):
 def main(file, shifted=False):
     nodes, edges, weights = parse(read(file.readlines()))
 
-    P = partial(p, edges, weights, shifted=shifted)
-    node_pairs = list(each_node_pair(edges, nodes, P))
+    node_pairs = list(each_node_pair(edges, nodes, p(edges, weights, shifted)))
 
     links = create_multilayer_network(node_pairs)
 
