@@ -7,8 +7,8 @@ from hypergraph.parse import read, parse, Node
 from hypergraph.transition import p
 
 
-def each_node_pair(edges, nodes, p):
-    print("[node pair]: creating links... ", end="")
+def create_links(edges, p):
+    print("[links]: creating links... ", end="")
 
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
@@ -84,9 +84,9 @@ def create_bipartite_network(edges, nodes, node_pairs):
 def main(file, shifted=False):
     nodes, edges, weights = parse(read(file.readlines()))
 
-    node_pairs = list(each_node_pair(edges, nodes, p(edges, weights, shifted)))
+    hypergraph_links = list(create_links(edges, p(edges, weights, shifted)))
 
-    links = create_multilayer_network(node_pairs)
+    links = create_multilayer_network(hypergraph_links)
 
     im = Infomap("-d -N5")
     im.set_names(nodes)
