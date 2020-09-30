@@ -59,7 +59,7 @@ def p(edges: Iterable[HyperEdge],
     return step_1 * step_2
 
 
-if __name__ == "__main__":
+def _test():
     nodes = [Node(id=1, name='a'),
              Node(id=2, name='b'),
              Node(id=3, name='c'),
@@ -98,3 +98,7 @@ if __name__ == "__main__":
     v = nodes[2]
     e2 = edges[1]
     print(p(edges, weights, u, e1, v, e2))
+
+
+if __name__ == "__main__":
+    _test()

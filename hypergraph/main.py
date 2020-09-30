@@ -93,7 +93,7 @@ def main(file, shifted=False):
     im.set_names(nodes)
     im.add_multilayer_links(links)
     im.run()
-    im.write_flow_tree("multilayer.ftree", states=True)
+    im.write_flow_tree("output/multilayer.ftree", states=True)
 
     states, links = create_state_network(node_pairs)
 
@@ -102,7 +102,7 @@ def main(file, shifted=False):
     im.add_state_nodes(states)
     im.add_links(links)
     im.run()
-    im.write_flow_tree("states.ftree", states=True)
+    im.write_flow_tree("output/states.ftree", states=True)
 
     bipartite_start_id, features, links = create_bipartite_network(edges, nodes, node_pairs)
 
@@ -112,4 +112,4 @@ def main(file, shifted=False):
     im.add_nodes(features)
     im.add_links(links)
     im.run()
-    im.write_flow_tree("bipartite.ftree")
+    im.write_flow_tree("output/bipartite.ftree")
