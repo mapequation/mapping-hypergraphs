@@ -7,12 +7,12 @@ from hypergraph.parse import read, parse, Node
 from hypergraph.transition import p
 
 
-def create_links(edges, p):
+def create_links(edges, p, self_links=False):
     print("[links] creating links... ", end="")
 
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
-            if u == v:
+            if not self_links and u == v:
                 continue
 
             w = p(u, e1, v, e2)
@@ -87,11 +87,11 @@ def create_bipartite_network(edges, nodes, node_pairs):
     return bipartite_start_id, features, links
 
 
-def main(file, shifted=False):
+def main(file, shifted=False, self_links=False):
     print("[main] starting...")
     nodes, edges, weights = parse(read(file.readlines()))
 
-    hypergraph_links = list(create_links(edges, p(edges, weights, shifted)))
+    hypergraph_links = list(create_links(edges, p(edges, weights, shifted), self_links))
 
     links = create_multilayer_network(hypergraph_links)
 
