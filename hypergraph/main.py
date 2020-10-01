@@ -86,6 +86,7 @@ def main(file, self_links=False, shifted=False):
     im.write_flow_tree("output/multilayer.ftree", states=True)
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
+    print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
     bipartite_start_id, features, links = create_bipartite_network(edges, nodes, hypergraph_links)
 
@@ -99,3 +100,4 @@ def main(file, self_links=False, shifted=False):
     im.write_flow_tree("output/bipartite.ftree")
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
+    print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
