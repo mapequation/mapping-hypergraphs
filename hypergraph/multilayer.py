@@ -1,12 +1,14 @@
-from typing import Iterable
+from typing import Tuple, List, Sequence
 
 from infomap import Infomap
 
 from hypergraph.io import Node
-from hypergraph.links import Link
+from hypergraph.links import HyperLink
+
+MultiLayerLink = Tuple[Tuple[int, int], Tuple[int, int], float]
 
 
-def create_network(links: Iterable[Link]):
+def create_network(links: Sequence[HyperLink]) -> List[MultiLayerLink]:
     intra = []
     inter = []
 
@@ -28,7 +30,7 @@ def create_network(links: Iterable[Link]):
     return links
 
 
-def run_infomap(filename, links, nodes):
+def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]):
     print("[infomap] running infomap on multilayer network... ", end="")
     im = Infomap("-d -N5 --silent")
     im.set_names(nodes)
@@ -40,6 +42,6 @@ def run_infomap(filename, links, nodes):
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
 
-def run(filename, links: Iterable[Link], nodes: Iterable[Node]):
+def run(filename, links: Sequence[HyperLink], nodes: Sequence[Node]):
     multilayer_links = create_network(links)
     run_infomap(filename, multilayer_links, nodes)

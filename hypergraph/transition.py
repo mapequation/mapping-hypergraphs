@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Iterable
+from typing import Iterable, Set
 
 from hypergraph.io import Node, HyperEdge, Weight
 
@@ -15,7 +15,7 @@ def E(edges: Iterable[HyperEdge]):
     edges_ = dict(edges_)
     print("done")
 
-    def inner(v: Node):
+    def inner(v: Node) -> Set[int]:
         return edges_[v.id]
 
     return inner
@@ -24,7 +24,7 @@ def E(edges: Iterable[HyperEdge]):
 def d(edges: Iterable[HyperEdge]):
     E_ = E(edges)
 
-    def inner(v: Node):
+    def inner(v: Node) -> float:
         return sum(omega for edge, _, omega in edges
                    if edge in E_(v))
 
@@ -41,7 +41,7 @@ def delta(weights: Iterable[Weight]):
     delta_ = dict(delta_)
     print("done")
 
-    def inner(e: HyperEdge):
+    def inner(e: HyperEdge) -> float:
         return delta_[e.id]
 
     return inner
@@ -53,7 +53,7 @@ def gamma(weights: Iterable[Weight]):
               for edge, node, gamma_ in weights}
     print("done")
 
-    def inner(e: HyperEdge, v: Node):
+    def inner(e: HyperEdge, v: Node) -> float:
         return gamma_[e.id, v.id]
 
     return inner

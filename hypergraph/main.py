@@ -3,7 +3,7 @@ from hypergraph.io import read, parse
 from hypergraph.links import create_links
 
 
-def main(file, outdir="output", self_links=False, shifted=False):
+def main(file, outdir="output", backtracking=True, self_links=False, shifted=False):
     print("[main] starting... ", end="")
     args = locals()
     for key, value in args.items():
@@ -23,5 +23,7 @@ def main(file, outdir="output", self_links=False, shifted=False):
     filename = "{}/multilayer{}.ftree".format(outdir, file_ending)
     multilayer.run(filename, links, nodes)
 
+    file_ending += "_backtracking" if backtracking else "_non_backtracking"
+
     filename = "{}/bipartite{}.ftree".format(outdir, file_ending)
-    bipartite.run(filename, links, nodes, edges)
+    bipartite.run(filename, links, nodes, edges, backtracking)
