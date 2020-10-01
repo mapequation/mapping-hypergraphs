@@ -68,13 +68,13 @@ def step_1(weights: Iterable[Weight], self_links=False):
     gamma_ev = gamma(weights)
     delta_e = delta(weights)
 
-    def no_self_links(e: HyperEdge, u: Node, v: Node):
-        return gamma_ev(e, v) / (delta_e(e) - gamma_ev(e, u))
+    def inner(e: HyperEdge, u: Node, v: Node):
+        if self_links:
+            return gamma_ev(e, v) / (delta_e(e) - gamma_ev(e, u))
 
-    def with_self_links(e: HyperEdge, u: Node, v: Node):
         return gamma_ev(e, v) / delta_e(e)
 
-    return with_self_links if self_links else no_self_links
+    return inner
 
 
 def step_2(edges: Iterable[HyperEdge]):
