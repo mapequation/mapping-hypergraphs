@@ -1,4 +1,7 @@
-def read(lines):
+from typing import List, Tuple
+
+
+def read(lines) -> Tuple[List[str], List[str], List[str]]:
     lines = (line.strip() for line in lines)
     lines = (line for line in lines if not line.startswith("#"))
 
