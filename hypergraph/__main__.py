@@ -1,18 +1,45 @@
 from hypergraph.main import main
 
 if __name__ == "__main__":
-    from argparse import ArgumentParser, FileType
+    from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+    from textwrap import dedent
     import sys
 
-    parser = ArgumentParser()
-    parser.add_argument("--self-links", const=True, default=False, action="store_const")
-    parser.add_argument("--bipartite-non-backtracking", const=True, default=False, action="store_const")
-    parser.add_argument("--shifted", const=True, default=False, action="store_const")
-    parser.add_argument("filename", type=FileType("r"), default=sys.stdin)
+    description = dedent("""
+    Create maps from hypergraps with edge-dependent vertex weights.
+
+    First, represent the hypergraph as any of
+    the formats specified under "representation".
+
+    Then, Infomap finds the community structure in the network
+    representation and outputs the result in "outdir".
+
+    For hypergraph input format, see: data/example.txt
+    """)
+
+    # noinspection PyTypeChecker
+    parser = ArgumentParser(prog="hypergraph",
+                            description=description,
+                            formatter_class=RawDescriptionHelpFormatter)
+
+    parser.add_argument("filename", type=FileType("r"), default=sys.stdin, help="the hypergraph file")
+    parser.add_argument("outdir", nargs="?", default="output")
+
+    parser.add_argument("--shifted", default=False, action="store_true")
+
+    output = parser.add_argument_group("representation")
+    options = output.add_mutually_exclusive_group(required=True)
+    options.add_argument("--multilayer", action="store_true")
+    options.add_argument("--multilayer-self-links", action="store_true")
+    options.add_argument("--bipartite", action="store_true")
+    options.add_argument("--bipartite-non-backtracking", action="store_true")
 
     args = parser.parse_args()
 
     main(args.filename,
-         backtracking=not args.bipartite_non_backtracking,
-         self_links=args.self_links,
-         shifted=args.shifted)
+         outdir=args.outdir,
+         shifted=args.shifted,
+         multilayer=args.multilayer,
+         multilayer_self_links=args.multilayer_self_links,
+         bipartite=args.bipartite,
+         bipartite_non_backtracking=args.bipartite_non_backtracking)

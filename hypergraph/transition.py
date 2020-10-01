@@ -5,7 +5,6 @@ from hypergraph.io import Node, HyperEdge, Weight
 
 
 def E(edges: Iterable[HyperEdge]):
-    print("[E] pre-calculating... ", end="")
     edges_ = defaultdict(set)
 
     for edge, nodes, _ in edges:
@@ -13,7 +12,6 @@ def E(edges: Iterable[HyperEdge]):
             edges_[node.id].add(edge)
 
     edges_ = dict(edges_)
-    print("done")
 
     def inner(v: Node) -> Set[int]:
         return edges_[v.id]
@@ -32,14 +30,12 @@ def d(edges: Iterable[HyperEdge]):
 
 
 def delta(weights: Iterable[Weight]):
-    print("[delta] pre-calculating... ", end="")
     delta_ = defaultdict(float)
 
     for edge, _, gamma in weights:
         delta_[edge] += gamma
 
     delta_ = dict(delta_)
-    print("done")
 
     def inner(e: HyperEdge) -> float:
         return delta_[e.id]
@@ -48,10 +44,8 @@ def delta(weights: Iterable[Weight]):
 
 
 def gamma(weights: Iterable[Weight]):
-    print("[gamma] pre-calculating... ", end="")
     gamma_ = {(edge, node.id): gamma_
               for edge, node, gamma_ in weights}
-    print("done")
 
     def inner(e: HyperEdge, v: Node) -> float:
         return gamma_[e.id, v.id]
@@ -60,9 +54,11 @@ def gamma(weights: Iterable[Weight]):
 
 
 def p(edges: Iterable[HyperEdge], weights: Iterable[Weight], self_links=False, shifted=False):
+    print("[transition] pre-calculating probabilities... ", end="")
     gamma_ = gamma(weights)
     delta_ = delta(weights)
     d_ = d(edges)
+    print("done")
 
     def p_node(e: HyperEdge, u: Node, v: Node):
         if self_links:

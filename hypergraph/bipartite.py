@@ -13,7 +13,7 @@ StateNode = namedtuple("StateNode", "state_id, node_id")
 def create_network(links: Sequence[HyperLink],
                    nodes: Sequence[Node],
                    edges: Sequence[HyperEdge],
-                   backtracking=True) \
+                   non_backtracking) \
         -> Tuple[List[Node], List[Link], Optional[List[StateNode]]]:
     print("[bipartite] creating bipartite... ", end="")
     bipartite_start_id = max(node.id for node in nodes) + 1
@@ -27,7 +27,7 @@ def create_network(links: Sequence[HyperLink],
     states = None
     get_state_id = defaultdict(lambda: len(get_state_id) + 1)
 
-    if not backtracking:
+    if non_backtracking:
         states = []
 
         for node in nodes:
@@ -43,7 +43,7 @@ def create_network(links: Sequence[HyperLink],
         target_id = v.id
         target_weight = w
 
-        if not backtracking:
+        if non_backtracking:
             source_id = get_state_id[u.id]
             target_id = get_state_id[v.id]
 
@@ -95,6 +95,6 @@ def run(filename,
         links: Sequence[HyperLink],
         nodes: Sequence[Node],
         edges: Sequence[HyperEdge],
-        backtracking=False):
-    features, bipartite_links, states = create_network(links, nodes, edges, backtracking)
+        non_backtracking):
+    features, bipartite_links, states = create_network(links, nodes, edges, non_backtracking)
     run_infomap(filename, bipartite_links, nodes, features, states)
