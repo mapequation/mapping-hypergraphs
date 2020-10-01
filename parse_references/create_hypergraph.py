@@ -1,34 +1,52 @@
 from parse_references import parse
 
 
+def hyperedge(edge_id, node_ids):
+    ids = " ".join(map(str, node_ids))
+    omega = 1
+    return "{} {} {}\n".format(edge_id, ids, omega)
+
+
+def weight(edge_id, node_id, gamma):
+    return "{} {} {}\n".format(edge_id, node_id, gamma)
+
+
+def weights(n):
+    # if n == 1:
+    #     gamma = (2,)
+    # else:
+    #     gamma = (3,) + (1,) * (n - 2) + (3,)
+    gamma = (1,) * n
+
+    return gamma
+
+
 def hypergraph(refs, outfile):
+    print("Writing vertices... ", end="")
     unique_authors = {author for coauthors in refs for author in coauthors}
     authors = {i + 1: author for i, author in enumerate(unique_authors)}
     author_ids = {author: i for i, author in authors.items()}
 
     outfile.write("*Vertices\n")
-    outfile.writelines("{} \"{}\"\n".format(i, author) for i, author in authors.items())
+    outfile.writelines("{} \"{}\"\n".format(node_id, name) for node_id, name in authors.items())
+    print("done")
 
+    print("Writing hyperedges... ", end="")
     articles = {i + 1: coauthors for i, coauthors in enumerate(refs)}
-    articles_author_ids = {i: tuple(author_ids[author] for author in coauthors)
-                           for i, coauthors in articles.items()}
+    articles_author_ids = {edge_id: tuple(author_ids[author] for author in coauthors)
+                           for edge_id, coauthors in articles.items()}
 
     outfile.write("*Hyperedges\n")
-    outfile.writelines("{} {} 1\n".format(i, " ".join(map(str, author_ids)))
-                       for i, author_ids in articles_author_ids.items())
+    outfile.writelines(hyperedge(i, node_ids)
+                       for i, node_ids in articles_author_ids.items())
+    print("done")
 
+    print("Writing weigths... ", end="")
     outfile.write("*Weights\n")
-
-    for i, author_ids in articles_author_ids.items():
-        num_coauthors = len(author_ids)
-
-        if num_coauthors == 1:
-            weights = (2,)
-        else:
-            weights = (2,) + (1,) * (num_coauthors - 2) + (2,)
-
-        outfile.writelines("{} {} {}\n".format(i, author_id, weight)
-                           for author_id, weight in zip(author_ids, weights))
+    outfile.writelines(weight(i, node_id, w)
+                       for i, ids in articles_author_ids.items()
+                       for node_id, w in zip(ids, weights(len(ids))))
+    print("done")
 
 
 if __name__ == "__main__":
