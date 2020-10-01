@@ -64,26 +64,43 @@ def gamma(weights: Iterable[Weight]):
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Weight], shifted=False):
+def step_1(weights: Iterable[Weight], self_links=False):
     gamma_ev = gamma(weights)
     delta_e = delta(weights)
+
+    def no_self_links(e: HyperEdge, u: Node, v: Node):
+        return gamma_ev(e, v) / (delta_e(e) - gamma_ev(e, u))
+
+    def with_self_links(e: HyperEdge, u: Node, v: Node):
+        return gamma_ev(e, v) / delta_e(e)
+
+    return with_self_links if self_links else no_self_links
+
+
+def step_2(edges: Iterable[HyperEdge]):
     d_v = d(edges)
+
+    def inner(e: HyperEdge, u: Node):
+        return e.omega / d_v(u)
+
+    return inner
+
+
+def p(edges: Iterable[HyperEdge], weights: Iterable[Weight], self_links=False, shifted=False):
+    step_1_ = step_1(weights, self_links)
+    step_2_ = step_2(edges)
 
     def inner(u: Node, e1: HyperEdge, v: Node, e2: HyperEdge):
         if shifted:
             if v not in e1.nodes:
                 return 0
 
-            step_1 = gamma_ev(e1, v) / (delta_e(e1) - gamma_ev(e1, u))
-            step_2 = e2.omega / d_v(v)
+            return step_1_(e1, u, v) * step_2_(e2, v)
 
         else:
             if u not in e2.nodes:
                 return 0
 
-            step_1 = gamma_ev(e2, v) / (delta_e(e2) - gamma_ev(e2, u))
-            step_2 = e2.omega / d_v(u)
-
-        return step_1 * step_2
+            return step_1_(e2, u, v) * step_2_(e2, u)
 
     return inner
