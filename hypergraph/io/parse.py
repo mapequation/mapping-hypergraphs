@@ -1,13 +1,13 @@
 import re
 from collections import namedtuple
-from typing import Dict
+from typing import Dict, List, Tuple, Mapping
 
 Node = namedtuple("Node", "id, name")
 HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
 Weight = namedtuple("Weight", "edge, node, gamma")
 
 
-def parse_nodes(lines):
+def parse_nodes(lines) -> Dict[int, Node]:
     nodes = {}
 
     for line in lines:
@@ -20,21 +20,21 @@ def parse_nodes(lines):
     return nodes
 
 
-def parse_edges(lines, nodes: Dict[int, Node]):
+def parse_edges(lines, nodes: Mapping[int, Node]) -> List[HyperEdge]:
     lines = (map(int, line.split()) for line in lines)
 
-    return (HyperEdge(edge_id, set(nodes[node_id] for node_id in node_ids), omega)
-            for edge_id, *node_ids, omega in lines)
+    return [HyperEdge(edge_id, set(nodes[node_id] for node_id in node_ids), omega)
+            for edge_id, *node_ids, omega in lines]
 
 
-def parse_weights(lines, nodes: Dict[int, Node]):
+def parse_weights(lines, nodes: Mapping[int, Node]) -> List[Weight]:
     lines = (map(int, line.split()) for line in lines)
 
-    return (Weight(edge, nodes[node_id], gamma)
-            for edge, node_id, gamma in lines)
+    return [Weight(edge, nodes[node_id], gamma)
+            for edge, node_id, gamma in lines]
 
 
-def parse(data):
+def parse(data) -> Tuple[List[Node], List[HyperEdge], List[Weight]]:
     nodes_lines, edges_lines, weights_lines = data
 
     print("[parse] parsing nodes... ", end="")
@@ -49,4 +49,4 @@ def parse(data):
     weights = parse_weights(weights_lines, nodes)
     print("done")
 
-    return list(nodes.values()), list(edges), list(weights)
+    return list(nodes.values()), edges, weights

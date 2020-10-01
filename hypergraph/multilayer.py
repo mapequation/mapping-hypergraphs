@@ -3,14 +3,15 @@ from typing import Iterable
 from infomap import Infomap
 
 from hypergraph.io import Node
+from hypergraph.links import Link
 
 
-def create_network(node_pairs):
+def create_network(links: Iterable[Link]):
     intra = []
     inter = []
 
     print("[multilayer] creating multilayer... ", end="")
-    for e1, u, e2, v, w in node_pairs:
+    for e1, u, e2, v, w in links:
         if e1 == e2:
             links = intra
         else:
@@ -39,6 +40,6 @@ def run_infomap(filename, links, nodes):
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
 
-def run(filename, links, nodes: Iterable[Node]):
+def run(filename, links: Iterable[Link], nodes: Iterable[Node]):
     multilayer_links = create_network(links)
     run_infomap(filename, multilayer_links, nodes)
