@@ -1,4 +1,8 @@
+from typing import Iterable
+
 from infomap import Infomap
+
+from hypergraph.io import Node
 
 
 def create_network(node_pairs):
@@ -33,3 +37,8 @@ def run_infomap(filename, links, nodes):
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
+
+
+def run(filename, links, nodes: Iterable[Node]):
+    multilayer_links = create_network(links)
+    run_infomap(filename, multilayer_links, nodes)

@@ -1,9 +1,11 @@
+from typing import Iterable
+
 from infomap import Infomap
 
-from hypergraph.io import Node
+from hypergraph.io import Node, HyperEdge
 
 
-def create_network(node_pairs, edges, nodes):
+def create_network(node_pairs, edges: Iterable[HyperEdge], nodes: Iterable[Node]):
     print("[bipartite] creating bipartite... ", end="")
     bipartite_start_id = max(node.id for node in nodes) + 1
 
@@ -39,3 +41,8 @@ def run_infomap(filename, links, nodes, features):
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
+
+
+def run(filename, links, nodes: Iterable[Node], edges: Iterable[HyperEdge]):
+    features, bipartite_links = create_network(links, edges, nodes)
+    run_infomap(filename, bipartite_links, nodes, features)

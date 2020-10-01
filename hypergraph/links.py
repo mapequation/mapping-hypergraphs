@@ -1,12 +1,16 @@
 from itertools import product
+from typing import Iterable
 
+from hypergraph.io import HyperEdge, Weight
 from hypergraph.transition import p
 
 
-def create_links(edges, weights, self_links=False, shifted=False):
+def create_links(edges: Iterable[HyperEdge], weights: Iterable[Weight], self_links=False, shifted=False):
     print("[links] creating links... ")
 
     p_ = p(edges, weights, self_links, shifted)
+
+    links = []
 
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
@@ -18,6 +22,7 @@ def create_links(edges, weights, self_links=False, shifted=False):
             if w < 1e-10:
                 continue
 
-            yield e1, u, e2, v, w
+            links.append((e1, u, e2, v, w))
 
     print("[links] done")
+    return links
