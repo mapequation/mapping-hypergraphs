@@ -1,4 +1,3 @@
-from collections import defaultdict
 from itertools import product
 
 from infomap import Infomap
@@ -47,24 +46,6 @@ def create_multilayer_network(node_pairs):
 
     print("done")
     return links
-
-
-def create_state_network(node_pairs):
-    state_ids = defaultdict(lambda: len(state_ids) + 1)
-
-    states = set()
-    links = []
-
-    for e1, u, e2, v, w in node_pairs:
-        source_id = state_ids[(e1.id, u.id)]
-        target_id = state_ids[(e2.id, v.id)]
-
-        states.add((source_id, u.id))
-        states.add((target_id, v.id))
-
-        links.append((source_id, target_id, w))
-
-    return states, links
 
 
 def create_bipartite_network(edges, nodes, node_pairs):
