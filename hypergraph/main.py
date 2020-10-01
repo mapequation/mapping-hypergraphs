@@ -78,12 +78,16 @@ def main(file, self_links=False, shifted=False):
 
     links = create_multilayer_network(hypergraph_links)
 
+    file_ending = ""
+    file_ending += "_self_links" if self_links else ""
+    file_ending += "_shifted" if shifted else ""
+
     print("[infomap] running infomap on multilayer network... ", end="")
     im = Infomap("-d -N5 --silent")
     im.set_names(nodes)
     im.add_multilayer_links(links)
     im.run()
-    im.write_flow_tree("output/multilayer.ftree", states=True)
+    im.write_flow_tree("output/multilayer{}.ftree".format(file_ending), states=True)
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
@@ -97,7 +101,7 @@ def main(file, self_links=False, shifted=False):
     im.add_nodes(features)
     im.add_links(links)
     im.run()
-    im.write_flow_tree("output/bipartite.ftree")
+    im.write_flow_tree("output/bipartite{}.ftree".format(file_ending))
     print("done")
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
