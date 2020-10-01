@@ -6,23 +6,17 @@ def read(lines):
     edges = []
     weights = []
 
-    contexts = {
-        "nodes": "*vertices",
-        "edges": "*hyperedges",
-        "weights": "*weights"
-    }
-
     context = None
 
     for line in lines:
         if line.startswith('*'):
             context = line.lower()
             continue
-        elif context == contexts["nodes"]:
+        elif context == "*vertices":
             nodes.append(line)
-        elif context == contexts["edges"]:
+        elif context == "*hyperedges":
             edges.append(line)
-        elif context == contexts["weights"]:
+        elif context == "*weights":
             weights.append(line)
 
     return nodes, edges, weights
