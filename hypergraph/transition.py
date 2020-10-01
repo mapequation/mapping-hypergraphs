@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Iterable
 
-from hypergraph.parse import Node, HyperEdge, Weight
+from hypergraph.io import Node, HyperEdge, Weight
 
 
 def E(edges: Iterable[HyperEdge]):

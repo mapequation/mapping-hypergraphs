@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.filename, args.self_links, args.shifted)
+    main(args.filename, self_links=args.self_links, shifted=args.shifted)
