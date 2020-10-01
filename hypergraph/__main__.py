@@ -1,4 +1,4 @@
-from hypergraph import main
+from hypergraph.main import main
 
 if __name__ == "__main__":
     from argparse import ArgumentParser, FileType

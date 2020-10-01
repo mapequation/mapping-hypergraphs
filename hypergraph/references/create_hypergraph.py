@@ -1,4 +1,4 @@
-from parse_references import parse
+from hypergraph.references.parse import parse
 
 
 def hyperedge(edge_id, node_ids):
