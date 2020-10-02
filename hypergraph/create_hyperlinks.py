@@ -1,17 +1,17 @@
 from itertools import product
 from typing import Iterable, List, Tuple
 
-from hypergraph.io.parse import HyperEdge, Gamma
-from hypergraph.network import Node
+from hypergraph.io import HyperEdge, Gamma
 from hypergraph.transition import p
+from network import Node
 
 HyperLink = Tuple[HyperEdge, Node, HyperEdge, Node, float]
 
 
-def create_links(edges: Iterable[HyperEdge],
-                 weights: Iterable[Gamma],
-                 self_links=False,
-                 shifted=False) -> List[HyperLink]:
+def create_hyperlinks(edges: Iterable[HyperEdge],
+                      weights: Iterable[Gamma],
+                      self_links=False,
+                      shifted=False) -> List[HyperLink]:
     print("[links] creating links... ")
 
     p_ = p(edges, weights, self_links, shifted)

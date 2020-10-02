@@ -3,9 +3,10 @@ from typing import Sequence
 
 from infomap import Infomap
 
-from hypergraph.io.parse import HyperEdge
-from hypergraph.links import HyperLink
-from hypergraph.network import StateNode, Node, BipartiteNetwork
+from hypergraph import run_infomap
+from hypergraph.create_hyperlinks import HyperLink
+from hypergraph.io import HyperEdge
+from network import StateNode, Node, BipartiteNetwork
 
 
 def create_network(links: Sequence[HyperLink],
@@ -67,22 +68,6 @@ def create_network(links: Sequence[HyperLink],
     return BipartiteNetwork(nodes, links_, features, states)
 
 
-def run_infomap(filename, network: BipartiteNetwork):
-    print("[infomap] running infomap on bipartite network... ", end="")
-    im = Infomap("-d -N5 --silent")
-    im.set_names(network.nodes)
-    im.set_names(network.features)
-    im.bipartite_start_id = network.bipartite_start_id
-    if network.states:
-        im.add_state_nodes(network.states)
-    im.add_links(network.links)
-    im.run()
-    im.write_flow_tree(filename, states=True)
-    print("done")
-    print("[infomap] codelength {}".format(im.codelength))
-    print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
-
-
 def run(filename,
         outdir,
         write_network: bool,
@@ -101,4 +86,12 @@ def run(filename,
             network.write(fp)
 
     if not no_infomap:
-        run_infomap(filename_ + ".ftree", network)
+        def set_network(im: Infomap):
+            im.set_names(network.nodes)
+            im.set_names(network.features)
+            im.bipartite_start_id = network.bipartite_start_id
+            if network.states:
+                im.add_state_nodes(network.states)
+            im.add_links(network.links)
+
+        run_infomap(filename_ + ".ftree", set_network)

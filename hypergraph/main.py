@@ -1,6 +1,6 @@
 from hypergraph import bipartite as bipartite_, multilayer as multilayer_
+from hypergraph import create_hyperlinks
 from hypergraph.io import read, parse
-from hypergraph.links import create_links
 
 
 def main(file,
@@ -25,10 +25,12 @@ def main(file,
 
     nodes, edges, weights = parse(read(file.readlines()))
 
-    links = create_links(edges, weights, multilayer_self_links, shifted)
+    hyperlinks = create_hyperlinks(edges, weights, multilayer_self_links, shifted)
 
     if multilayer or multilayer_self_links:
-        multilayer_.run("multilayer", outdir, write_network, no_infomap, links, nodes, multilayer_self_links, shifted)
+        multilayer_.run("multilayer", outdir, write_network, no_infomap, hyperlinks, nodes, multilayer_self_links,
+                        shifted)
 
     if bipartite or bipartite_non_backtracking:
-        bipartite_.run("bipartite", outdir, write_network, no_infomap, links, nodes, edges, bipartite_non_backtracking)
+        bipartite_.run("bipartite", outdir, write_network, no_infomap, hyperlinks, nodes, edges,
+                       bipartite_non_backtracking)

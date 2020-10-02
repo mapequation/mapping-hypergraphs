@@ -1,8 +1,8 @@
 from collections import defaultdict
 from typing import Iterable, Set
 
-from hypergraph.network import Node
-from hypergraph.io.parse import HyperEdge, Gamma
+from hypergraph.io import HyperEdge, Gamma
+from network import Node
 
 
 def E(edges: Iterable[HyperEdge]):

@@ -2,8 +2,9 @@ from typing import List, Sequence
 
 from infomap import Infomap
 
-from hypergraph.links import HyperLink
-from hypergraph.network import MultiLayerLink, Node, MultilayerNetwork
+from hypergraph import run_infomap
+from hypergraph.create_hyperlinks import HyperLink
+from network import MultiLayerLink, Node, MultilayerNetwork
 
 
 def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> MultilayerNetwork:
@@ -23,18 +24,6 @@ def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> Multila
 
     print("done")
     return MultilayerNetwork(nodes, links_)
-
-
-def run_infomap(filename, network: MultilayerNetwork):
-    print("[infomap] running infomap on multilayer network... ", end="")
-    im = Infomap("-d -N5 --silent")
-    im.set_names(network.nodes)
-    im.add_multilayer_links(network.links)
-    im.run()
-    im.write_flow_tree(filename, states=True)
-    print("done")
-    print("[infomap] codelength {}".format(im.codelength))
-    print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
 
 def run(filename,
@@ -57,4 +46,8 @@ def run(filename,
             network.write(fp)
 
     if not no_infomap:
-        run_infomap(filename_ + ".ftree", network)
+        def set_network(im: Infomap):
+            im.set_names(network.nodes)
+            im.add_multilayer_links(network.links)
+
+        run_infomap(filename_ + ".ftree", set_network)
