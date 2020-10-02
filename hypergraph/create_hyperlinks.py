@@ -1,20 +1,14 @@
 from itertools import product
 from typing import Iterable, List, Tuple
 
-from hypergraph.io import HyperEdge, Gamma
-from hypergraph.transition import p
+from hypergraph.io import HyperEdge
 from network import Node
 
 HyperLink = Tuple[HyperEdge, Node, HyperEdge, Node, float]
 
 
-def create_hyperlinks(edges: Iterable[HyperEdge],
-                      weights: Iterable[Gamma],
-                      self_links=False,
-                      shifted=False) -> List[HyperLink]:
+def create_hyperlinks(edges: Iterable[HyperEdge], link_probability, self_links=False) -> List[HyperLink]:
     print("[links] creating links... ")
-
-    p_ = p(edges, weights, self_links, shifted)
 
     links = []
 
@@ -23,7 +17,7 @@ def create_hyperlinks(edges: Iterable[HyperEdge],
             if not self_links and u == v:
                 continue
 
-            w = p_(u, e1, v, e2)
+            w = link_probability(u, e1, v, e2)
 
             if w < 1e-10:
                 continue

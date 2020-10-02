@@ -36,6 +36,7 @@ if __name__ == "__main__":
     options.add_argument("-M", "--multilayer-self-links", action="store_true")
     options.add_argument("-b", "--bipartite", action="store_true")
     options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
+    options.add_argument("-c", "--clique-graph", action="store_true")
 
     args = parser.parse_args()
 
@@ -47,4 +48,5 @@ if __name__ == "__main__":
          multilayer=args.multilayer,
          multilayer_self_links=args.multilayer_self_links,
          bipartite=args.bipartite,
-         bipartite_non_backtracking=args.bipartite_non_backtracking)
+         bipartite_non_backtracking=args.bipartite_non_backtracking,
+         clique=args.clique_graph)
