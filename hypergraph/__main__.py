@@ -23,16 +23,17 @@ if __name__ == "__main__":
                             formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument("filename", type=FileType("r"), default=sys.stdin, help="the hypergraph file")
-    parser.add_argument("outdir", nargs="?", default="output")
+    parser.add_argument("outdir", nargs="?", default="output", help="directory to write output to")
 
-    parser.add_argument("--shifted", default=False, action="store_true")
+    parser.add_argument("-s", "--shifted", default=False, action="store_true",
+                        help="use shifted transition probability")
 
     output = parser.add_argument_group("representation")
     options = output.add_mutually_exclusive_group(required=True)
-    options.add_argument("--multilayer", action="store_true")
-    options.add_argument("--multilayer-self-links", action="store_true")
-    options.add_argument("--bipartite", action="store_true")
-    options.add_argument("--bipartite-non-backtracking", action="store_true")
+    options.add_argument("-m", "--multilayer", default=True, action="store_true")
+    options.add_argument("-M", "--multilayer-self-links", action="store_true")
+    options.add_argument("-b", "--bipartite", action="store_true")
+    options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
 
     args = parser.parse_args()
 
