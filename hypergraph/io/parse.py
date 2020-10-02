@@ -1,10 +1,7 @@
 import re
-from collections import namedtuple
 from typing import Dict, List, Tuple, Mapping, Sequence
 
-Node = namedtuple("Node", "id, name")
-HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
-Weight = namedtuple("Weight", "edge, node, gamma")
+from hypergraph.network import Node, HyperEdge, Gamma
 
 
 def parse_nodes(lines: Sequence[str]) -> Dict[int, Node]:
@@ -27,15 +24,15 @@ def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEd
             for edge_id, *node_ids, omega in lines]
 
 
-def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Weight]:
+def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma]:
     lines = (map(int, line.split()) for line in lines)
 
-    return [Weight(edge, nodes[node_id], gamma)
+    return [Gamma(edge, nodes[node_id], gamma)
             for edge, node_id, gamma in lines]
 
 
 def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) \
-        -> Tuple[List[Node], List[HyperEdge], List[Weight]]:
+        -> Tuple[List[Node], List[HyperEdge], List[Gamma]]:
     nodes_lines, edges_lines, weights_lines = data
 
     print("[parse] parsing nodes... ", end="")

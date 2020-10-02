@@ -1,13 +1,10 @@
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from typing import Sequence, Tuple, List, Optional
 
 from infomap import Infomap
 
-from hypergraph.io import Node, HyperEdge
-from hypergraph.links import HyperLink
-
-Link = Tuple[int, int, float]
-StateNode = namedtuple("StateNode", "state_id, node_id")
+from hypergraph.io import write_bipartite_network
+from hypergraph.network import Link, StateNode, HyperLink, Node, HyperEdge
 
 
 def create_network(links: Sequence[HyperLink],
@@ -69,27 +66,6 @@ def create_network(links: Sequence[HyperLink],
     return features, links_, states
 
 
-def write_network(filename,
-                  links: List[Link],
-                  nodes: Sequence[Node],
-                  features: Sequence[Node],
-                  states: Optional[Sequence[StateNode]]):
-    bipartite_start_id = min(node.id for node in features)
-
-    with open(filename, "w") as fp:
-        fp.write("*Vertices\n")
-        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in nodes)
-        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in features)
-
-        if states:
-            fp.write("*States\n")
-            fp.writelines("{} {}\n".format(state.state_id, state.node_id) for state in states)
-
-        fp.write("*Bipartite {}\n".format(bipartite_start_id))
-        fp.writelines("{} {} {}\n".format(source, target, w)
-                      for source, target, w in links)
-
-
 def run_infomap(filename,
                 links: Sequence[Link],
                 nodes: Sequence[Node],
@@ -114,7 +90,7 @@ def run_infomap(filename,
 
 def run(filename,
         outdir,
-        network: bool,
+        write_network: bool,
         no_infomap: bool,
         links: Sequence[HyperLink],
         nodes: Sequence[Node],
@@ -125,8 +101,8 @@ def run(filename,
 
     features, bipartite_links, states = create_network(links, nodes, edges, non_backtracking)
 
-    if network:
-        write_network(filename_ + ".net", bipartite_links, nodes, features, states)
+    if write_network:
+        write_bipartite_network(filename_ + ".net", bipartite_links, nodes, features, states)
 
     if not no_infomap:
         run_infomap(filename_ + ".ftree", bipartite_links, nodes, features, states)

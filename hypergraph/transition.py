@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Iterable, Set
 
-from hypergraph.io import Node, HyperEdge, Weight
+from hypergraph.network import Node, HyperEdge, Gamma
 
 
 def E(edges: Iterable[HyperEdge]):
@@ -29,7 +29,7 @@ def d(edges: Iterable[HyperEdge]):
     return inner
 
 
-def delta(weights: Iterable[Weight]):
+def delta(weights: Iterable[Gamma]):
     delta_ = defaultdict(float)
 
     for edge, _, gamma in weights:
@@ -43,7 +43,7 @@ def delta(weights: Iterable[Weight]):
     return inner
 
 
-def gamma(weights: Iterable[Weight]):
+def gamma(weights: Iterable[Gamma]):
     gamma_ = {(edge, node.id): gamma_
               for edge, node, gamma_ in weights}
 
@@ -53,7 +53,7 @@ def gamma(weights: Iterable[Weight]):
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Weight], self_links=False, shifted=False):
+def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, shifted=False):
     print("[transition] pre-calculating probabilities... ", end="")
     gamma_ = gamma(weights)
     delta_ = delta(weights)
@@ -66,8 +66,8 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Weight], self_links=False, s
 
         return gamma_(e, v) / delta_(e)
 
-    def p_edge(e: HyperEdge, u: Node):
-        return e.omega / d_(u)
+    def p_edge(e: HyperEdge, v: Node):
+        return e.omega / d_(v)
 
     def inner(u: Node, e1: HyperEdge, v: Node, e2: HyperEdge):
         if shifted:

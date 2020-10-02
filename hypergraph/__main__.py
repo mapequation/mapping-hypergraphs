@@ -25,7 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("filename", type=FileType("r"), default=sys.stdin, help="the hypergraph file")
     parser.add_argument("outdir", nargs="?", default="output", help="directory to write output to")
 
-    parser.add_argument("-n", "--network", action="store_true", help="write network representation to file")
+    parser.add_argument("-w", "--write-network", action="store_true", help="write network representation to file")
     parser.add_argument("--no-infomap", action="store_true", help="do not run infomap")
     parser.add_argument("-s", "--shifted", default=False, action="store_true",
                         help="use shifted transition probability")
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     main(args.filename,
          outdir=args.outdir,
-         network=args.network,
+         write_network=args.write_network,
          no_infomap=args.no_infomap,
          shifted=args.shifted,
          multilayer=args.multilayer,

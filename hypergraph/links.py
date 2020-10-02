@@ -1,14 +1,12 @@
 from itertools import product
-from typing import Iterable, Tuple, List
+from typing import Iterable, List
 
-from hypergraph.io import HyperEdge, Weight, Node
+from hypergraph.network import HyperLink, HyperEdge, Gamma
 from hypergraph.transition import p
-
-HyperLink = Tuple[HyperEdge, Node, HyperEdge, Node, float]
 
 
 def create_links(edges: Iterable[HyperEdge],
-                 weights: Iterable[Weight],
+                 weights: Iterable[Gamma],
                  self_links=False,
                  shifted=False) -> List[HyperLink]:
     print("[links] creating links... ")

@@ -1,11 +1,9 @@
-from typing import Tuple, List, Sequence
+from typing import List, Sequence
 
 from infomap import Infomap
 
-from hypergraph.io import Node
-from hypergraph.links import HyperLink
-
-MultiLayerLink = Tuple[Tuple[int, int], Tuple[int, int], float]
+from hypergraph.io import write_multilayer_network
+from hypergraph.network import MultiLayerLink, HyperLink, Node
 
 
 def create_network(links: Sequence[HyperLink]) -> List[MultiLayerLink]:
@@ -30,16 +28,6 @@ def create_network(links: Sequence[HyperLink]) -> List[MultiLayerLink]:
     return links
 
 
-def write_network(filename, links: List[MultiLayerLink], nodes: Sequence[Node]):
-    with open(filename, "w") as fp:
-        fp.write("*Vertices\n")
-        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in nodes)
-
-        fp.write("*Multilayer\n")
-        fp.writelines("{} {} {} {} {}\n".format(e1, u, e2, v, w)
-                      for (e1, u), (e2, v), w in links)
-
-
 def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]):
     print("[infomap] running infomap on multilayer network... ", end="")
     im = Infomap("-d -N5 --silent")
@@ -54,7 +42,7 @@ def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]
 
 def run(filename,
         outdir,
-        network: bool,
+        write_network: bool,
         no_infomap: bool,
         links: Sequence[HyperLink],
         nodes: Sequence[Node],
@@ -67,8 +55,8 @@ def run(filename,
 
     multilayer_links = create_network(links)
 
-    if network:
-        write_network(filename_ + ".net", multilayer_links, nodes)
+    if write_network:
+        write_multilayer_network(filename_ + ".net", multilayer_links, nodes)
 
     if not no_infomap:
         run_infomap(filename_ + ".ftree", multilayer_links, nodes)
