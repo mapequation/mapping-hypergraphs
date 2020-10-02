@@ -61,16 +61,16 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, sh
     d_ = d(edges)
     print("done")
 
-    def p_node(e: HyperEdge, u: Node, v: Node):
+    def p_node(e: HyperEdge, u: Node, v: Node) -> float:
         if self_links:
             return gamma_(e, v) / (delta_(e) - gamma_(e, u))
 
         return gamma_(e, v) / delta_(e)
 
-    def p_edge(e: HyperEdge, v: Node):
+    def p_edge(e: HyperEdge, v: Node) -> float:
         return e.omega / d_(v)
 
-    def inner(u: Node, e1: HyperEdge, v: Node, e2: HyperEdge):
+    def inner(u: Node, e1: HyperEdge, v: Node, e2: HyperEdge) -> float:
         if shifted:
             if v not in e1.nodes:
                 return 0
