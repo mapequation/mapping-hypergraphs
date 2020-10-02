@@ -1,17 +1,16 @@
 from collections import defaultdict
-from typing import Sequence, Tuple, List, Optional
+from typing import Sequence
 
 from infomap import Infomap
 
-from hypergraph.io import write_bipartite_network
-from hypergraph.network import Link, StateNode, HyperLink, Node, HyperEdge
+from hypergraph.network import StateNode, HyperLink, Node, HyperEdge, BipartiteNetwork
 
 
 def create_network(links: Sequence[HyperLink],
                    nodes: Sequence[Node],
                    edges: Sequence[HyperEdge],
                    non_backtracking) \
-        -> Tuple[List[Node], List[Link], Optional[List[StateNode]]]:
+        -> BipartiteNetwork:
     print("[bipartite] creating bipartite... ", end="")
     bipartite_start_id = max(node.id for node in nodes) + 1
 
@@ -63,24 +62,18 @@ def create_network(links: Sequence[HyperLink],
         links_.append((feature_id, target_id, target_weight))
 
     print("done")
-    return features, links_, states
+    return BipartiteNetwork(nodes, links_, features, states)
 
 
-def run_infomap(filename,
-                links: Sequence[Link],
-                nodes: Sequence[Node],
-                features: Sequence[Node],
-                states: Optional[Sequence[StateNode]] = None):
-    bipartite_start_id = min(node.id for node in features)
-
+def run_infomap(filename, network: BipartiteNetwork):
     print("[infomap] running infomap on bipartite network... ", end="")
     im = Infomap("-d -N5 --silent")
-    im.set_names(nodes)
-    im.set_names(features)
-    im.bipartite_start_id = bipartite_start_id - 1  # FIXME Fixed in Infomap 1.2.0
-    if states:
-        im.add_state_nodes(states)
-    im.add_links(links)
+    im.set_names(network.nodes)
+    im.set_names(network.features)
+    im.bipartite_start_id = network.bipartite_start_id
+    if network.states:
+        im.add_state_nodes(network.states)
+    im.add_links(network.links)
     im.run()
     im.write_flow_tree(filename, states=True)
     print("done")
@@ -99,10 +92,11 @@ def run(filename,
     file_ending = "_non_backtracking" if non_backtracking else "_backtracking"
     filename_ = "{}/{}{}".format(outdir, filename, file_ending)
 
-    features, bipartite_links, states = create_network(links, nodes, edges, non_backtracking)
+    network = create_network(links, nodes, edges, non_backtracking)
 
     if write_network:
-        write_bipartite_network(filename_ + ".net", bipartite_links, nodes, features, states)
+        with open(filename_ + ".net", "w") as fp:
+            network.write(fp)
 
     if not no_infomap:
-        run_infomap(filename_ + ".ftree", bipartite_links, nodes, features, states)
+        run_infomap(filename_ + ".ftree", network)

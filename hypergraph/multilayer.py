@@ -2,37 +2,33 @@ from typing import List, Sequence
 
 from infomap import Infomap
 
-from hypergraph.io import write_multilayer_network
-from hypergraph.network import MultiLayerLink, HyperLink, Node
+from hypergraph.network import MultiLayerLink, HyperLink, Node, MultilayerNetwork
 
 
-def create_network(links: Sequence[HyperLink]) -> List[MultiLayerLink]:
+def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> MultilayerNetwork:
     intra = []
     inter = []
 
     print("[multilayer] creating multilayer... ", end="")
     for e1, u, e2, v, w in links:
         if e1 == e2:
-            links = intra
+            intra.append((e1.id, u.id, e2.id, v.id, w))
         else:
-            links = inter
+            inter.append((e1.id, u.id, e2.id, v.id, w))
 
-        # layer_id node_id layer_id node_id weight
-        links.append((e1.id, u.id, e2.id, v.id, w))
-
-    links = [((e1, u), (e2, v), w)
-             for links in (intra, inter)
-             for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
+    links_: List[MultiLayerLink] = [((e1, u), (e2, v), w)
+                                    for links in (intra, inter)
+                                    for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
 
     print("done")
-    return links
+    return MultilayerNetwork(nodes, links_)
 
 
-def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]):
+def run_infomap(filename, network: MultilayerNetwork):
     print("[infomap] running infomap on multilayer network... ", end="")
     im = Infomap("-d -N5 --silent")
-    im.set_names(nodes)
-    im.add_multilayer_links(links)
+    im.set_names(network.nodes)
+    im.add_multilayer_links(network.links)
     im.run()
     im.write_flow_tree(filename, states=True)
     print("done")
@@ -53,10 +49,11 @@ def run(filename,
     file_ending += "_self_links" if self_links else ""
     filename_ = "{}/{}{}".format(outdir, filename, file_ending)
 
-    multilayer_links = create_network(links)
+    network = create_network(nodes, links)
 
     if write_network:
-        write_multilayer_network(filename_ + ".net", multilayer_links, nodes)
+        with open(filename_ + ".net", "w") as fp:
+            network.write(fp)
 
     if not no_infomap:
-        run_infomap(filename_ + ".ftree", multilayer_links, nodes)
+        run_infomap(filename_ + ".ftree", network)
