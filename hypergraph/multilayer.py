@@ -2,7 +2,8 @@ from typing import List, Sequence
 
 from infomap import Infomap
 
-from hypergraph.network import MultiLayerLink, HyperLink, Node, MultilayerNetwork
+from hypergraph.links import HyperLink
+from hypergraph.network import MultiLayerLink, Node, MultilayerNetwork
 
 
 def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> MultilayerNetwork:

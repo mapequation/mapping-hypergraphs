@@ -7,10 +7,6 @@ StateNode = namedtuple("StateNode", "state_id, node_id")
 Link = Tuple[int, int, float]
 MultiLayerLink = Tuple[Tuple[int, int], Tuple[int, int], float]
 
-HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
-HyperLink = Tuple[HyperEdge, Node, HyperEdge, Node, float]
-Gamma = namedtuple("Gamma", "edge, node, gamma")
-
 
 class Network:
     nodes: List[Node]

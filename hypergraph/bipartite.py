@@ -3,7 +3,9 @@ from typing import Sequence
 
 from infomap import Infomap
 
-from hypergraph.network import StateNode, HyperLink, Node, HyperEdge, BipartiteNetwork
+from hypergraph.io.parse import HyperEdge
+from hypergraph.links import HyperLink
+from hypergraph.network import StateNode, Node, BipartiteNetwork
 
 
 def create_network(links: Sequence[HyperLink],
