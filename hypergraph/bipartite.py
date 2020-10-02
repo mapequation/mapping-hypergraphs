@@ -69,6 +69,27 @@ def create_network(links: Sequence[HyperLink],
     return features, links_, states
 
 
+def write_network(filename,
+                  links: List[Link],
+                  nodes: Sequence[Node],
+                  features: Sequence[Node],
+                  states: Optional[Sequence[StateNode]]):
+    bipartite_start_id = min(node.id for node in features)
+
+    with open(filename, "w") as fp:
+        fp.write("*Vertices\n")
+        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in nodes)
+        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in features)
+
+        if states:
+            fp.write("*States\n")
+            fp.writelines("{} {}\n".format(state.state_id, state.node_id) for state in states)
+
+        fp.write("*Bipartite {}\n".format(bipartite_start_id))
+        fp.writelines("{} {} {}\n".format(source, target, w)
+                      for source, target, w in links)
+
+
 def run_infomap(filename,
                 links: Sequence[Link],
                 nodes: Sequence[Node],
@@ -92,9 +113,20 @@ def run_infomap(filename,
 
 
 def run(filename,
+        outdir,
+        network: bool,
+        no_infomap: bool,
         links: Sequence[HyperLink],
         nodes: Sequence[Node],
         edges: Sequence[HyperEdge],
-        non_backtracking):
+        non_backtracking: bool):
+    file_ending = "_non_backtracking" if non_backtracking else "_backtracking"
+    filename_ = "{}/{}{}".format(outdir, filename, file_ending)
+
     features, bipartite_links, states = create_network(links, nodes, edges, non_backtracking)
-    run_infomap(filename, bipartite_links, nodes, features, states)
+
+    if network:
+        write_network(filename_ + ".net", bipartite_links, nodes, features, states)
+
+    if not no_infomap:
+        run_infomap(filename_ + ".ftree", bipartite_links, nodes, features, states)

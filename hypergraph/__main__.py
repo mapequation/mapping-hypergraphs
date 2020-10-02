@@ -25,12 +25,14 @@ if __name__ == "__main__":
     parser.add_argument("filename", type=FileType("r"), default=sys.stdin, help="the hypergraph file")
     parser.add_argument("outdir", nargs="?", default="output", help="directory to write output to")
 
+    parser.add_argument("-n", "--network", action="store_true", help="write network representation to file")
+    parser.add_argument("--no-infomap", action="store_true", help="do not run infomap")
     parser.add_argument("-s", "--shifted", default=False, action="store_true",
                         help="use shifted transition probability")
 
     output = parser.add_argument_group("representation")
     options = output.add_mutually_exclusive_group(required=True)
-    options.add_argument("-m", "--multilayer", default=True, action="store_true")
+    options.add_argument("-m", "--multilayer", action="store_true")
     options.add_argument("-M", "--multilayer-self-links", action="store_true")
     options.add_argument("-b", "--bipartite", action="store_true")
     options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
@@ -39,6 +41,8 @@ if __name__ == "__main__":
 
     main(args.filename,
          outdir=args.outdir,
+         network=args.network,
+         no_infomap=args.no_infomap,
          shifted=args.shifted,
          multilayer=args.multilayer,
          multilayer_self_links=args.multilayer_self_links,

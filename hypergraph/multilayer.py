@@ -30,6 +30,16 @@ def create_network(links: Sequence[HyperLink]) -> List[MultiLayerLink]:
     return links
 
 
+def write_network(filename, links: List[MultiLayerLink], nodes: Sequence[Node]):
+    with open(filename, "w") as fp:
+        fp.write("*Vertices\n")
+        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in nodes)
+
+        fp.write("*Multilayer\n")
+        fp.writelines("{} {} {} {} {}\n".format(e1, u, e2, v, w)
+                      for (e1, u), (e2, v), w in links)
+
+
 def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]):
     print("[infomap] running infomap on multilayer network... ", end="")
     im = Infomap("-d -N5 --silent")
@@ -42,6 +52,23 @@ def run_infomap(filename, links: Sequence[MultiLayerLink], nodes: Sequence[Node]
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
 
-def run(filename, links: Sequence[HyperLink], nodes: Sequence[Node]):
+def run(filename,
+        outdir,
+        network: bool,
+        no_infomap: bool,
+        links: Sequence[HyperLink],
+        nodes: Sequence[Node],
+        self_links: bool,
+        shifted: bool):
+    file_ending = ""
+    file_ending += "_shifted" if shifted else ""
+    file_ending += "_self_links" if self_links else ""
+    filename_ = "{}/{}{}".format(outdir, filename, file_ending)
+
     multilayer_links = create_network(links)
-    run_infomap(filename, multilayer_links, nodes)
+
+    if network:
+        write_network(filename_ + ".net", multilayer_links, nodes)
+
+    if not no_infomap:
+        run_infomap(filename_ + ".ftree", multilayer_links, nodes)
