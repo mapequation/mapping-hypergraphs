@@ -9,7 +9,7 @@ from hypergraph.transition import p
 from network import MultiLayerLink, MultilayerNetwork
 
 
-def create_network(hypergraph: HyperGraph, self_links, shifted) -> MultilayerNetwork:
+def create_network(hypergraph: HyperGraph, self_links: bool, shifted: bool) -> MultilayerNetwork:
     nodes, edges, weights = hypergraph
 
     p_ = p(edges, weights, self_links, shifted)
@@ -42,12 +42,13 @@ def create_network(hypergraph: HyperGraph, self_links, shifted) -> MultilayerNet
 
 
 def run(hypergraph: HyperGraph,
-        filename,
-        outdir,
+        self_links: bool,
+        shifted: bool,
+        outdir: str,
         write_network: bool,
         no_infomap: bool,
-        self_links: bool,
-        shifted: bool):
+        filename: str = "multilayer",
+        **kwargs):
     file_ending = ""
     file_ending += "_shifted" if shifted else ""
     file_ending += "_self_links" if self_links else ""

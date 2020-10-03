@@ -9,7 +9,7 @@ from hypergraph.transition import p
 from network import StateNode, Node, BipartiteNetwork
 
 
-def create_network(hypergraph: HyperGraph, non_backtracking) -> BipartiteNetwork:
+def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteNetwork:
     nodes, edges, weights = hypergraph
 
     p_ = p(edges, weights)
@@ -78,11 +78,12 @@ def create_network(hypergraph: HyperGraph, non_backtracking) -> BipartiteNetwork
 
 
 def run(hypergraph: HyperGraph,
-        filename,
-        outdir,
+        non_backtracking: bool,
+        outdir: str,
         write_network: bool,
         no_infomap: bool,
-        non_backtracking: bool):
+        filename: str = "bipartite",
+        **kwargs):
     file_ending = "_non_backtracking" if non_backtracking else "_backtracking"
     filename_ = "{}/{}{}".format(outdir, filename, file_ending)
 

@@ -29,10 +29,11 @@ def create_network(hypergraph: HyperGraph) -> Network:
 
 
 def run(hypergraph: HyperGraph,
-        filename,
-        outdir,
+        outdir: str,
         write_network: bool,
-        no_infomap: bool):
+        no_infomap: bool,
+        filename: str = "clique",
+        **kwargs):
     filename_ = "{}/{}".format(outdir, filename)
 
     network = create_network(hypergraph)
