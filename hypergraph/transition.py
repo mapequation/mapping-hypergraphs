@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Iterable, Set
+from typing import Iterable, Set, Optional
 
 from hypergraph.io import HyperEdge, Gamma
 from network import Node
@@ -10,6 +10,10 @@ def E(edges: Iterable[HyperEdge]):
     Set of hyperedges incident to vertex v.
 
     .. math:: E(v) = { e \in E : v in e }
+
+    Set of hyperedges incident to both vertices u and v.
+
+    .. math:: E(u, v) = { e \in E : u \in e, v \in e }
     """
     edges_ = defaultdict(set)
 
@@ -19,8 +23,11 @@ def E(edges: Iterable[HyperEdge]):
 
     edges_ = dict(edges_)
 
-    def inner(v: Node) -> Set[int]:
-        return edges_[v.id]
+    def inner(u: Node, v: Optional[Node] = None) -> Set[int]:
+        if v:
+            return edges_[u.id] & edges_[v.id]
+
+        return edges_[u.id]
 
     return inner
 
