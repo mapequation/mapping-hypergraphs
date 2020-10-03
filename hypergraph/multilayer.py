@@ -1,37 +1,51 @@
-from typing import List, Sequence
+from itertools import product
+from typing import List
 
 from infomap import Infomap
 
 from hypergraph import run_infomap
-from hypergraph.create_hyperlinks import HyperLink
-from network import MultiLayerLink, Node, MultilayerNetwork
+from hypergraph.io import HyperGraph
+from hypergraph.transition import p
+from network import MultiLayerLink, MultilayerNetwork
 
 
-def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> MultilayerNetwork:
+def create_network(hypergraph: HyperGraph, self_links, shifted) -> MultilayerNetwork:
+    nodes, edges, weights = hypergraph
+
+    p_ = p(edges, weights, self_links, shifted)
+
     intra = []
     inter = []
 
     print("[multilayer] creating multilayer... ", end="")
-    for e1, u, e2, v, w in links:
-        if e1 == e2:
-            intra.append((e1.id, u.id, e2.id, v.id, w))
-        else:
-            inter.append((e1.id, u.id, e2.id, v.id, w))
+    for e1, e2 in product(edges, edges):
+        for u, v in product(e1.nodes, e2.nodes):
+            if not self_links and u == v:
+                continue
 
-    links_: List[MultiLayerLink] = [((e1, u), (e2, v), w)
-                                    for links in (intra, inter)
-                                    for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
+            w = p_(e1, u, e2, v)
+
+            if w < 1e-10:
+                continue
+
+            if e1 == e2:
+                intra.append((e1.id, u.id, e2.id, v.id, w))
+            else:
+                inter.append((e1.id, u.id, e2.id, v.id, w))
+
+    links: List[MultiLayerLink] = [((e1, u), (e2, v), w)
+                                   for links in (intra, inter)
+                                   for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
 
     print("done")
-    return MultilayerNetwork(nodes, links_)
+    return MultilayerNetwork(nodes, links)
 
 
-def run(filename,
+def run(hypergraph: HyperGraph,
+        filename,
         outdir,
         write_network: bool,
         no_infomap: bool,
-        links: Sequence[HyperLink],
-        nodes: Sequence[Node],
         self_links: bool,
         shifted: bool):
     file_ending = ""
@@ -39,7 +53,7 @@ def run(filename,
     file_ending += "_self_links" if self_links else ""
     filename_ = "{}/{}{}".format(outdir, filename, file_ending)
 
-    network = create_network(nodes, links)
+    network = create_network(hypergraph, self_links, shifted)
 
     if write_network:
         with open(filename_ + ".net", "w") as fp:

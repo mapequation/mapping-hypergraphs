@@ -1,19 +1,19 @@
 from collections import defaultdict
-from typing import Sequence
+from itertools import product
 
 from infomap import Infomap
 
 from hypergraph import run_infomap
-from hypergraph.create_hyperlinks import HyperLink
-from hypergraph.io import HyperEdge
+from hypergraph.io import HyperGraph
+from hypergraph.transition import p
 from network import StateNode, Node, BipartiteNetwork
 
 
-def create_network(links: Sequence[HyperLink],
-                   nodes: Sequence[Node],
-                   edges: Sequence[HyperEdge],
-                   non_backtracking) \
-        -> BipartiteNetwork:
+def create_network(hypergraph: HyperGraph, non_backtracking) -> BipartiteNetwork:
+    nodes, edges, weights = hypergraph
+
+    p_ = p(edges, weights)
+
     print("[bipartite] creating bipartite... ", end="")
     bipartite_start_id = max(node.id for node in nodes) + 1
 
@@ -33,53 +33,60 @@ def create_network(links: Sequence[HyperLink],
             state_id = get_state_id[node.id]
             states.append(StateNode(state_id, node.id))
 
-    links_ = []
+    links = []
 
-    for e1, u, e2, v, w in links:
-        feature_id = edge_to_feature_id[e2.id]
+    for e1, e2 in product(edges, edges):
+        for u, v in product(e1.nodes, e2.nodes):
+            if not non_backtracking and u == v:
+                continue
 
-        source_id = u.id
-        target_id = v.id
-        target_weight = w
+            w = p_(e1, u, e2, v)
 
-        if non_backtracking:
-            source_id = get_state_id[u.id]
-            target_id = get_state_id[v.id]
+            if w < 1e-10:
+                continue
 
-            create_feature_state = (feature_id, source_id) not in get_state_id
-            feature_state_id = get_state_id[feature_id, source_id]
+            feature_id = edge_to_feature_id[e2.id]
 
-            if create_feature_state:
-                states.append(StateNode(feature_state_id, feature_id))
+            source_id = u.id
+            target_id = v.id
+            target_weight = w
 
-            feature_id = feature_state_id
+            if non_backtracking:
+                source_id = get_state_id[u.id]
+                target_id = get_state_id[v.id]
 
-            if len(e2.nodes) > 1:
-                target_weight = w / (len(e2.nodes) - 1)
+                create_feature_state = (feature_id, source_id) not in get_state_id
+                feature_state_id = get_state_id[feature_id, source_id]
 
-            links_.extend((feature_id, get_state_id[node.id], target_weight)
-                          for node in e2.nodes
-                          if node not in {u, v})
+                if create_feature_state:
+                    states.append(StateNode(feature_state_id, feature_id))
 
-        links_.append((source_id, feature_id, w))
-        links_.append((feature_id, target_id, target_weight))
+                feature_id = feature_state_id
+
+                if len(e2.nodes) > 1:
+                    target_weight = w / (len(e2.nodes) - 1)
+
+                links.extend((feature_id, get_state_id[node.id], target_weight)
+                             for node in e2.nodes
+                             if node not in {u, v})
+
+            links.append((source_id, feature_id, w))
+            links.append((feature_id, target_id, target_weight))
 
     print("done")
-    return BipartiteNetwork(nodes, links_, features, states)
+    return BipartiteNetwork(nodes, links, features, states)
 
 
-def run(filename,
+def run(hypergraph: HyperGraph,
+        filename,
         outdir,
         write_network: bool,
         no_infomap: bool,
-        links: Sequence[HyperLink],
-        nodes: Sequence[Node],
-        edges: Sequence[HyperEdge],
         non_backtracking: bool):
     file_ending = "_non_backtracking" if non_backtracking else "_backtracking"
     filename_ = "{}/{}{}".format(outdir, filename, file_ending)
 
-    network = create_network(links, nodes, edges, non_backtracking)
+    network = create_network(hypergraph, non_backtracking)
 
     if write_network:
         with open(filename_ + ".net", "w") as fp:

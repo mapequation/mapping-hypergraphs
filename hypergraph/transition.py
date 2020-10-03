@@ -95,7 +95,7 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, sh
     d_ = d(edges)
     print("done")
 
-    def inner(u: Node, e1: HyperEdge, v: Node, e2: HyperEdge) -> float:
+    def inner(e1: HyperEdge, u: Node, e2: HyperEdge, v: Node) -> float:
         if shifted:
             if v not in e1.nodes:
                 return 0

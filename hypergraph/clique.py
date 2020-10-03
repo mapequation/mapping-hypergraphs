@@ -1,25 +1,22 @@
-from typing import Sequence
-
 from infomap import Infomap
 
 from hypergraph import run_infomap
-from hypergraph.create_hyperlinks import HyperLink
-from network import Network, Node
+from hypergraph.io import HyperGraph
+from network import Network
 
 
-def create_network(nodes: Sequence[Node], links: Sequence[HyperLink]) -> Network:
+def create_network(hypergraph: HyperGraph) -> Network:
     return Network([], [])
 
 
-def run(filename,
+def run(hypergraph: HyperGraph,
+        filename,
         outdir,
         write_network: bool,
-        no_infomap: bool,
-        links: Sequence[HyperLink],
-        nodes: Sequence[Node]):
+        no_infomap: bool):
     filename_ = "{}/{}".format(outdir, filename)
 
-    network = create_network(nodes, links)
+    network = create_network(hypergraph)
 
     if write_network:
         with open(filename_ + ".net", "w") as fp:

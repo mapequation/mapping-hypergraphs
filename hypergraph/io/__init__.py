@@ -1,2 +1,2 @@
-from .parse import parse, HyperEdge, Gamma
+from .parse import parse, HyperEdge, HyperGraph, Gamma
 from .read import read

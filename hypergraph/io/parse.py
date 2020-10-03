@@ -6,6 +6,7 @@ from network import Node
 
 HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
 Gamma = namedtuple("Gamma", "edge, node, gamma")
+HyperGraph = Tuple[Sequence[Node], Sequence[HyperEdge], Sequence[Gamma]]
 
 
 def parse_nodes(lines: Sequence[str]) -> Dict[int, Node]:
@@ -35,8 +36,7 @@ def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma
             for edge, node_id, gamma in lines]
 
 
-def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) \
-        -> Tuple[List[Node], List[HyperEdge], List[Gamma]]:
+def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGraph:
     nodes_lines, edges_lines, weights_lines = data
 
     print("[parse] parsing nodes... ", end="")
