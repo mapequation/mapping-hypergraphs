@@ -1,7 +1,5 @@
-from hypergraph.bipartite import run as run_bipartite
-from hypergraph.clique import run as run_clique
+from hypergraph import representation
 from hypergraph.io import read, parse
-from hypergraph.multilayer import run as run_multilayer
 
 
 def main(file,
@@ -28,12 +26,12 @@ def main(file,
     hypergraph = parse(read(file.readlines()))
 
     if multilayer or multilayer_self_links:
-        run_multilayer(hypergraph, "multilayer", outdir, write_network, no_infomap,
-                       multilayer_self_links, shifted)
+        representation.multilayer.run(hypergraph, "multilayer", outdir, write_network, no_infomap,
+                                      multilayer_self_links, shifted)
 
     if bipartite or bipartite_non_backtracking:
-        run_bipartite(hypergraph, "bipartite", outdir, write_network, no_infomap,
-                      bipartite_non_backtracking)
+        representation.bipartite.run(hypergraph, "bipartite", outdir, write_network, no_infomap,
+                                     bipartite_non_backtracking)
 
     if clique:
-        run_clique(hypergraph, "clique", outdir, write_network, no_infomap)
+        representation.clique.run(hypergraph, "clique", outdir, write_network, no_infomap)

@@ -122,6 +122,8 @@ def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     Weight for going between vertex u to v in a clique graph representation
     of a hypergraph with edge-independent vertex weights.
 
+    Assumes edge-independent vertex weights.
+
     .. math::
 
         w_{u,v} = \sum_{e \in E(u,v) } \frac{ \omega(e) \gamma(u) \gamma(v) }{ \delta(e) }
