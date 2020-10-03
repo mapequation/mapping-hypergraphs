@@ -6,6 +6,11 @@ from network import Node
 
 
 def E(edges: Iterable[HyperEdge]):
+    """
+    Set of hyperedges incident to vertex v.
+
+    .. math:: E(v) = { e \in E : v in e }
+    """
     edges_ = defaultdict(set)
 
     for edge, nodes, _ in edges:
@@ -21,6 +26,11 @@ def E(edges: Iterable[HyperEdge]):
 
 
 def d(edges: Iterable[HyperEdge]):
+    """
+    Degree of vertex v.
+
+    .. math:: d(v) = \sum_{e \in E(v)} \omega(e)
+    """
     E_ = E(edges)
 
     def inner(v: Node) -> float:
@@ -31,6 +41,11 @@ def d(edges: Iterable[HyperEdge]):
 
 
 def delta(weights: Iterable[Gamma]):
+    """
+    Degree of hyperedge e.
+
+    .. math:: \delta(e) \sum_{v \in e} \gamma_e(v)
+    """
     delta_ = defaultdict(float)
 
     for edge, _, gamma in weights:
@@ -45,6 +60,11 @@ def delta(weights: Iterable[Gamma]):
 
 
 def gamma(weights: Iterable[Gamma]):
+    """
+    Edge-(in)dependent vertex weight.
+
+    .. math:: \gamma_e(v)
+    """
     gamma_ = {(edge, node.id): gamma_
               for edge, node, gamma_ in weights}
 
@@ -55,6 +75,13 @@ def gamma(weights: Iterable[Gamma]):
 
 
 def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, shifted=False):
+    """
+    Transition probability to go from vertex u in edge e1 to vertex v in vertex e2.
+
+    .. math::
+
+        p_{u,v) = \frac{ \gamma_{e_2}(v) }{ \delta(e_2) } \frac{ \omega(e_2) } { d(u) }
+    """
     print("[transition] pre-calculating probabilities... ", end="")
     gamma_ = gamma(weights)
     delta_ = delta(weights)
