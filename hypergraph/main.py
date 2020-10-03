@@ -9,14 +9,15 @@ def main(file,
          bipartite_non_backtracking=False,
          clique=False,
          **kwargs):
-    print("[main] starting...")
-
     print("[main] ", end="")
     args = locals()
     for key, value in args.items():
         if key == "file":
             value = value.name
-        if value:
+        if key == "kwargs":
+            for arg in kwargs:
+                print("{}={} ".format(arg, kwargs[arg]), end="")
+        elif value:
             print("{}={} ".format(key, value), end="")
     print()
 
