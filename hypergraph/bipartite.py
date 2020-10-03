@@ -101,4 +101,4 @@ def run(hypergraph: HyperGraph,
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
 
-        run_infomap(filename_ + ".ftree", set_network)
+        run_infomap(filename_ + ".ftree", set_network, args="-d")

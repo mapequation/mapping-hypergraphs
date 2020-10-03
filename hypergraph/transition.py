@@ -116,3 +116,27 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, sh
 
     return inner
 
+
+def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
+    """
+    Weight for going between vertex u to v in a clique graph representation
+    of a hypergraph with edge-independent vertex weights.
+
+    .. math::
+
+        w_{u,v} = \sum_{e \in E(u,v) } \frac{ \omega(e) \gamma(u) \gamma(v) }{ \delta(e) }
+    """
+    print("[transition] pre-calculating probabilities... ", end="")
+    gamma_ = gamma(weights)
+    delta_ = delta(weights)
+    E_ = E(edges)
+    edges_ = {edge.id: edge for edge in edges}
+    print("done")
+
+    def inner(u: Node, v: Node) -> float:
+        E_u_v = (edges_[edge_id] for edge_id in E_(u, v))
+
+        return sum(e.omega * gamma_(e, u) * gamma_(e, v) / delta_(e)
+                   for e in E_u_v)
+
+    return inner

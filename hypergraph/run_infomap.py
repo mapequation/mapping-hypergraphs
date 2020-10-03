@@ -5,9 +5,9 @@ from infomap import Infomap
 InfomapCallback = Callable[[Infomap], None]
 
 
-def run_infomap(filename, callback: InfomapCallback):
+def run_infomap(filename, callback: InfomapCallback, args=""):
     print("[infomap] running infomap... ", end="")
-    im = Infomap("-d -N5 --silent")
+    im = Infomap("-N5 --silent {}".format(args))
     callback(im)
     im.run()
     im.write_flow_tree(filename, states=True)
