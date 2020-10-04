@@ -27,19 +27,21 @@ def run(file,
         bipartite=False,
         bipartite_non_backtracking=False,
         clique_graph=False,
+        directed_clique=False,
         write_network=False,
         no_infomap=False,
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
 
-    infomap_args = None
+    infomap_args = "--directed" \
+        if multilayer or multilayer_self_links or bipartite or bipartite_non_backtracking or directed_clique \
+        else None
 
     if multilayer or multilayer_self_links:
         network = representation.multilayer(hypergraph, multilayer_self_links)
 
         file_ending = "_self_links" if multilayer_self_links else ""
         filename = "{}/{}{}".format(outdir, "multilayer", file_ending)
-        infomap_args = "--directed"
 
         def set_network(im: Infomap):
             im.set_names(network.nodes)
@@ -50,7 +52,6 @@ def run(file,
 
         file_ending = "_non_backtracking" if bipartite_non_backtracking else "_backtracking"
         filename = "{}/{}{}".format(outdir, "bipartite", file_ending)
-        infomap_args = "--directed"
 
         def set_network(im: Infomap):
             im.set_names(network.nodes)
@@ -60,10 +61,11 @@ def run(file,
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
 
-    elif clique_graph:
-        network = representation.clique(hypergraph)
+    elif clique_graph or directed_clique:
+        network = representation.clique(hypergraph, directed_clique)
 
-        filename = "{}/{}".format(outdir, "clique")
+        file_ending = "_directed" if directed_clique else ""
+        filename = "{}/{}{}".format(outdir, "clique", file_ending)
 
         def set_network(im: Infomap):
             im.add_nodes(network.nodes)
@@ -116,6 +118,7 @@ def main():
     options.add_argument("-b", "--bipartite", action="store_true")
     options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
     options.add_argument("-c", "--clique-graph", action="store_true")
+    options.add_argument("-C", "--directed-clique", action="store_true")
 
     args = parser.parse_args()
 
