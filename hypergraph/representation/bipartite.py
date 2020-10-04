@@ -1,9 +1,6 @@
 from collections import defaultdict
 from itertools import product
 
-from infomap import Infomap
-
-from hypergraph import run_infomap
 from hypergraph.io import HyperGraph
 from hypergraph.transition import p
 from network import StateNode, Node, BipartiteNetwork
@@ -75,31 +72,3 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
 
     print("done")
     return BipartiteNetwork(nodes, links, features, states)
-
-
-def run(hypergraph: HyperGraph,
-        non_backtracking: bool,
-        outdir: str,
-        write_network: bool,
-        no_infomap: bool,
-        filename: str = "bipartite",
-        **kwargs):
-    file_ending = "_non_backtracking" if non_backtracking else "_backtracking"
-    filename_ = "{}/{}{}".format(outdir, filename, file_ending)
-
-    network = create_network(hypergraph, non_backtracking)
-
-    if write_network:
-        with open(filename_ + ".net", "w") as fp:
-            network.write(fp)
-
-    if not no_infomap:
-        def set_network(im: Infomap):
-            im.set_names(network.nodes)
-            im.set_names(network.features)
-            im.bipartite_start_id = network.bipartite_start_id
-            if network.states:
-                im.add_state_nodes(network.states)
-            im.add_links(network.links)
-
-        run_infomap(filename_ + ".ftree", set_network, args="-d")

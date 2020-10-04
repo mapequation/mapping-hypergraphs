@@ -1,18 +1,15 @@
 from itertools import product
 from typing import List
 
-from infomap import Infomap
-
-from hypergraph import run_infomap
 from hypergraph.io import HyperGraph
 from hypergraph.transition import p
 from network import MultiLayerLink, MultilayerNetwork
 
 
-def create_network(hypergraph: HyperGraph, self_links: bool, shifted: bool) -> MultilayerNetwork:
+def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
     nodes, edges, weights = hypergraph
 
-    p_ = p(edges, weights, self_links, shifted)
+    p_ = p(edges, weights, self_links)
 
     intra = []
     inter = []
@@ -39,30 +36,3 @@ def create_network(hypergraph: HyperGraph, self_links: bool, shifted: bool) -> M
 
     print("done")
     return MultilayerNetwork(nodes, links)
-
-
-def run(hypergraph: HyperGraph,
-        self_links: bool,
-        shifted: bool,
-        outdir: str,
-        write_network: bool,
-        no_infomap: bool,
-        filename: str = "multilayer",
-        **kwargs):
-    file_ending = ""
-    file_ending += "_shifted" if shifted else ""
-    file_ending += "_self_links" if self_links else ""
-    filename_ = "{}/{}{}".format(outdir, filename, file_ending)
-
-    network = create_network(hypergraph, self_links, shifted)
-
-    if write_network:
-        with open(filename_ + ".net", "w") as fp:
-            network.write(fp)
-
-    if not no_infomap:
-        def set_network(im: Infomap):
-            im.set_names(network.nodes)
-            im.add_multilayer_links(network.links)
-
-        run_infomap(filename_ + ".ftree", set_network, args="-d")

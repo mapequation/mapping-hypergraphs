@@ -16,9 +16,10 @@ class Network:
         self.nodes = list(nodes)
         self.links = list(links)
 
-    def write(self, fp):
-        self._write_nodes(fp)
-        self._write_links(fp)
+    def write(self, filename):
+        with open(filename, "w") as fp:
+            self._write_nodes(fp)
+            self._write_links(fp)
 
     def _write_nodes(self, fp):
         fp.write("*Vertices\n")
