@@ -9,9 +9,9 @@ from network import Network
 InfomapCallback = Callable[[Infomap], None]
 
 
-def run_infomap(filename, callback: InfomapCallback, args=""):
+def run_infomap(filename, callback: InfomapCallback, args=None):
     print("[infomap] running infomap... ", end="")
-    im = Infomap("-N5 --silent {}".format(args))
+    im = Infomap("-N5 --silent {}".format(args if args else ""))
     callback(im)
     im.run()
     im.write_flow_tree(filename, states=True)
@@ -21,6 +21,7 @@ def run_infomap(filename, callback: InfomapCallback, args=""):
 
 
 def run(file,
+        outdir="output",
         multilayer=False,
         multilayer_self_links=False,
         bipartite=False,
@@ -28,56 +29,54 @@ def run(file,
         clique_graph=False,
         write_network=False,
         no_infomap=False,
-        outdir="output",
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
+
+    infomap_args = None
 
     if multilayer or multilayer_self_links:
         network = representation.multilayer(hypergraph, multilayer_self_links)
 
         file_ending = "_self_links" if multilayer_self_links else ""
         filename = "{}/{}{}".format(outdir, "multilayer", file_ending)
+        infomap_args = "--directed"
 
-        if not no_infomap:
-            def set_network(im: Infomap):
-                im.set_names(network.nodes)
-                im.add_multilayer_links(network.links)
-
-            run_infomap(filename + ".ftree", set_network, args="-d")
+        def set_network(im: Infomap):
+            im.set_names(network.nodes)
+            im.add_multilayer_links(network.links)
 
     elif bipartite or bipartite_non_backtracking:
         network = representation.bipartite(hypergraph, bipartite_non_backtracking)
 
         file_ending = "_non_backtracking" if bipartite_non_backtracking else "_backtracking"
         filename = "{}/{}{}".format(outdir, "bipartite", file_ending)
+        infomap_args = "--directed"
 
-        if not no_infomap:
-            def set_network(im: Infomap):
-                im.set_names(network.nodes)
-                im.set_names(network.features)
-                im.bipartite_start_id = network.bipartite_start_id
-                if network.states:
-                    im.add_state_nodes(network.states)
-                im.add_links(network.links)
-
-            run_infomap(filename + ".ftree", set_network, args="-d")
+        def set_network(im: Infomap):
+            im.set_names(network.nodes)
+            im.set_names(network.features)
+            im.bipartite_start_id = network.bipartite_start_id
+            if network.states:
+                im.add_state_nodes(network.states)
+            im.add_links(network.links)
 
     elif clique_graph:
         network = representation.clique(hypergraph)
 
         filename = "{}/{}".format(outdir, "clique")
 
-        if not no_infomap:
-            def set_network(im: Infomap):
-                im.add_nodes(network.nodes)
-                im.add_links(network.links)
+        def set_network(im: Infomap):
+            im.add_nodes(network.nodes)
+            im.add_links(network.links)
 
-            run_infomap(filename + ".ftree", set_network)
     else:
         return
 
     if write_network:
         network.write(filename + ".net")
+
+    if not no_infomap:
+        run_infomap(filename + ".ftree", set_network, infomap_args)
 
     return network
 
