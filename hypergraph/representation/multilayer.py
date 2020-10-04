@@ -9,12 +9,13 @@ from network import MultiLayerLink, MultilayerNetwork
 def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
     nodes, edges, weights = hypergraph
 
+    print("[multilayer] creating multilayer...")
+
     p_ = p(edges, weights, self_links)
 
     intra = []
     inter = []
 
-    print("[multilayer] creating multilayer... ", end="")
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
             if not self_links and u == v:
@@ -34,5 +35,4 @@ def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwor
                                    for links in (intra, inter)
                                    for e1, u, e2, v, w in sorted(links, key=lambda link: link[0])]
 
-    print("done")
     return MultilayerNetwork(nodes, links)

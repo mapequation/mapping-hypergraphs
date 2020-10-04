@@ -39,16 +39,13 @@ def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma
 def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGraph:
     nodes_lines, edges_lines, weights_lines = data
 
-    print("[parse] parsing nodes... ", end="")
+    print("[parse] parsing nodes...")
     nodes = parse_nodes(nodes_lines)
-    print("done")
 
-    print("[parse] parsing edges... ", end="")
+    print("[parse] parsing edges...")
     edges = parse_edges(edges_lines, nodes)
-    print("done")
 
-    print("[parse] parsing weights... ", end="")
+    print("[parse] parsing weights...")
     weights = parse_weights(weights_lines, nodes)
-    print("done")
 
     return list(nodes.values()), edges, weights

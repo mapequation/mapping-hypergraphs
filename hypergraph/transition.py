@@ -89,11 +89,10 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, sh
 
         p_{u,v) = \frac{ \gamma_{e_2}(v) }{ \delta(e_2) } \frac{ \omega(e_2) } { d(u) }
     """
-    print("[transition] pre-calculating probabilities... ", end="")
+    print("[transition] pre-calculating probabilities...")
     gamma_ = gamma(weights)
     delta_ = delta(weights)
     d_ = d(edges)
-    print("done")
 
     def inner(e1: HyperEdge, u: Node, e2: HyperEdge, v: Node) -> float:
         if shifted:
@@ -128,12 +127,11 @@ def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
 
         w_{u,v} = \sum_{e \in E(u,v) } \frac{ \omega(e) \gamma(u) \gamma(v) }{ \delta(e) }
     """
-    print("[transition] pre-calculating probabilities... ", end="")
+    print("[transition] pre-calculating probabilities...")
     gamma_ = gamma(weights)
     delta_ = delta(weights)
     E_ = E(edges)
     edges_ = {edge.id: edge for edge in edges}
-    print("done")
 
     def inner(u: Node, v: Node) -> float:
         E_u_v = (edges_[edge_id] for edge_id in E_(u, v))

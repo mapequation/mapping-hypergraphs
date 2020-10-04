@@ -10,12 +10,12 @@ InfomapCallback = Callable[[Infomap], None]
 
 
 def run_infomap(filename, callback: InfomapCallback, args=None):
-    print("[infomap] running infomap... ", end="")
+    print("[infomap] running infomap...")
     im = Infomap("-N5 --silent {}".format(args if args else ""))
     callback(im)
     im.run()
     im.write_flow_tree(filename, states=True)
-    print("done")
+
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
