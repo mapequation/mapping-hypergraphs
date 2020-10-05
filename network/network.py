@@ -46,8 +46,7 @@ class BipartiteNetwork(Network):
 
     @property
     def bipartite_start_id(self):
-        # FIXME Fixed in Infomap 1.2.0
-        return min(node.id for node in self.features) - 1
+        return min(node.id for node in self.features)
 
     def _write_nodes(self, fp):
         super()._write_nodes(fp)

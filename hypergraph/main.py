@@ -52,7 +52,8 @@ def run(file,
         def set_network(im: Infomap):
             im.set_names(network.nodes)
             im.set_names(network.features)
-            im.bipartite_start_id = network.bipartite_start_id
+            # FIXME Fixed in Infomap 1.2.0
+            im.bipartite_start_id = network.bipartite_start_id - 1
             if network.states:
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
