@@ -18,9 +18,6 @@ def create_network(hypergraph: HyperGraph, directed: bool) -> Network:
 
         for e1, e2 in product(edges, edges):
             for u, v in product(e1.nodes, e2.nodes):
-                if u == v:
-                    continue
-
                 weight = p_(e1, u, e2, v)
 
                 if weight < 1e-10:
@@ -29,7 +26,7 @@ def create_network(hypergraph: HyperGraph, directed: bool) -> Network:
                 links[u.id, v.id] += weight
 
         links = [(source, target, weight)
-                 for (source, target), weight in links.items()]
+                 for (source, target), weight in sorted(links.items())]
 
     else:
         w_ = w(edges, weights)
