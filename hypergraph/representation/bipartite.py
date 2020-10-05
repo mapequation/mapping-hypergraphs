@@ -27,23 +27,23 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
     if non_backtracking:
         states = [StateNode(get_state_id[node.id], node.id) for node in nodes]
 
-    links = []
+    links = defaultdict(float)
 
     for e1, e2 in product(edges, edges):
         for u, v in product(e1.nodes, e2.nodes):
-            if not non_backtracking and u == v:
+            if non_backtracking and u == v:
                 continue
 
-            w = p_(e1, u, e2, v)
+            weight = p_(e1, u, e2, v)
 
-            if w < 1e-10:
+            if weight < 1e-10:
                 continue
 
             feature_id = edge_to_feature_id[e2.id]
 
             source_id = u.id
             target_id = v.id
-            target_weight = w
+            target_weight = weight
 
             if non_backtracking:
                 source_id = get_state_id[u.id]
@@ -58,13 +58,15 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
                 feature_id = feature_state_id
 
                 if len(e2.nodes) > 1:
-                    target_weight = w / (len(e2.nodes) - 1)
+                    target_weight = weight / (len(e2.nodes) - 1)
 
-                links.extend((feature_id, get_state_id[node.id], target_weight)
-                             for node in e2.nodes
-                             if node not in {u, v})
+                for node in e2.nodes - {u, v}:
+                    links[feature_id, get_state_id[node.id]] += target_weight
 
-            links.append((source_id, feature_id, w))
-            links.append((feature_id, target_id, target_weight))
+            links[source_id, feature_id] += weight
+            links[feature_id, target_id] += target_weight
+
+    links = [(source, target, weight)
+             for (source, target), weight in sorted(links.items())]
 
     return BipartiteNetwork(nodes, links, features, states)
