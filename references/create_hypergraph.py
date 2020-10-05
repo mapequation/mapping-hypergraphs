@@ -13,7 +13,7 @@ def weight(edge_id, node_id, gamma):
 
 def weights(n):
     # if n == 1:
-    #     gamma = (2,)
+    #     gamma = (3,)
     # else:
     #     gamma = (3,) + (1,) * (n - 2) + (3,)
     gamma = (1,) * n
