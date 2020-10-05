@@ -38,7 +38,7 @@ class BipartiteNetwork(Network):
     def __init__(self, nodes: Sequence[Node],
                  links: Sequence[Link],
                  features: Sequence[Node],
-                 states: Optional[Sequence[StateNode]]):
+                 states: Optional[Sequence[StateNode]] = None):
         super().__init__(nodes, links)
         self.features = list(features)
         if states:

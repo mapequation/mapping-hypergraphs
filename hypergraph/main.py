@@ -75,7 +75,7 @@ def run(file,
         network.write(filename + ".net")
 
     if not no_infomap:
-        infomap_args = None if clique_graph else "--directed"
+        infomap_args = None if clique_graph or bipartite else "--directed"
         run_infomap(filename + ".ftree", set_network, infomap_args)
 
     return network
