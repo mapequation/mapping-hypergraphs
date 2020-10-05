@@ -34,7 +34,7 @@ def create_network(hypergraph: HyperGraph, directed: bool) -> Network:
         links = []
 
         for u, v in combinations_with_replacement(nodes, 2):
-            weight = w_(u, v)
+            weight = w_(u, v, self_links=True)
 
             if weight < 1e-10:
                 continue

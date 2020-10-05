@@ -10,7 +10,7 @@ def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwor
 
     print("[multilayer] creating multilayer...")
 
-    p_ = p(edges, weights, self_links)
+    p_ = p(edges, weights)
 
     links = []
 
@@ -19,7 +19,7 @@ def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwor
             if not self_links and u == v:
                 continue
 
-            weight = p_(e1, u, e2, v)
+            weight = p_(e1, u, e2, v, self_links)
 
             if weight < 1e-10:
                 continue

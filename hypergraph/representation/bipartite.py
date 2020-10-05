@@ -34,7 +34,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
             if non_backtracking and u == v:
                 continue
 
-            weight = p_(e1, u, e2, v)
+            weight = p_(e1, u, e2, v, self_links=not non_backtracking)
 
             if weight < 1e-10:
                 continue
@@ -56,12 +56,6 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
                     states.append(StateNode(feature_state_id, feature_id))
 
                 feature_id = feature_state_id
-
-                if len(e2.nodes) > 1:
-                    target_weight = weight / (len(e2.nodes) - 1)
-
-                for node in e2.nodes - {u, v}:
-                    links[feature_id, get_state_id[node.id]] += target_weight
 
             links[source_id, feature_id] += weight
             links[feature_id, target_id] += target_weight

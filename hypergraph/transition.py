@@ -81,7 +81,7 @@ def gamma(weights: Iterable[Gamma]):
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False):
+def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     """
     Transition probability to go from vertex u in edge e1 to vertex v in vertex e2.
 
@@ -94,14 +94,13 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False):
     delta_ = delta(weights)
     d_ = d(edges)
 
-    def inner(e1: HyperEdge, u: Node, e2: HyperEdge, v: Node) -> float:
+    def inner(e1: HyperEdge, u: Node, e2: HyperEdge, v: Node, self_links: bool = False) -> float:
         if u not in e2.nodes:
             return 0
 
-        if self_links:
-            return gamma_(e2, v) / (delta_(e2) - gamma_(e2, u)) * e2.omega / d_(u)
+        delta_e = delta_(e2) if self_links else delta_(e2) - gamma_(e2, u)
 
-        return gamma_(e2, v) / delta_(e2) * e2.omega / d_(u)
+        return gamma_(e2, v) / delta_e * e2.omega / d_(u)
 
     return inner
 
@@ -123,10 +122,12 @@ def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     E_ = E(edges)
     edges_ = {edge.id: edge for edge in edges}
 
-    def inner(u: Node, v: Node) -> float:
+    def inner(u: Node, v: Node, self_links: bool = False) -> float:
         E_u_v = (edges_[edge_id] for edge_id in E_(u, v))
 
-        return sum(e.omega * gamma_(e, u) * gamma_(e, v) / delta_(e)
+        delta_e = lambda e: delta_(e) if self_links else delta_(e) - gamma_(e, u)
+
+        return sum(e.omega * gamma_(e, u) * gamma_(e, v) / delta_e(e)
                    for e in E_u_v)
 
     return inner
