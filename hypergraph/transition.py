@@ -81,7 +81,7 @@ def gamma(weights: Iterable[Gamma]):
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, shifted=False):
+def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False):
     """
     Transition probability to go from vertex u in edge e1 to vertex v in vertex e2.
 
@@ -95,23 +95,13 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma], self_links=False, sh
     d_ = d(edges)
 
     def inner(e1: HyperEdge, u: Node, e2: HyperEdge, v: Node) -> float:
-        if shifted:
-            if v not in e1.nodes:
-                return 0
+        if u not in e2.nodes:
+            return 0
 
-            if self_links:
-                return gamma_(e1, v) / (delta_(e1) - gamma_(e1, u)) * e2.omega / d_(v)
+        if self_links:
+            return gamma_(e2, v) / (delta_(e2) - gamma_(e2, u)) * e2.omega / d_(u)
 
-            return gamma_(e1, v) / delta_(e1) * e2.omega / d_(v)
-
-        else:
-            if u not in e2.nodes:
-                return 0
-
-            if self_links:
-                return gamma_(e2, v) / (delta_(e2) - gamma_(e2, u)) * e2.omega / d_(u)
-
-            return gamma_(e2, v) / delta_(e2) * e2.omega / d_(u)
+        return gamma_(e2, v) / delta_(e2) * e2.omega / d_(u)
 
     return inner
 
