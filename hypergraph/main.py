@@ -33,10 +33,6 @@ def run(file,
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
 
-    infomap_args = "--directed" \
-        if multilayer or multilayer_self_links or bipartite or bipartite_non_backtracking or directed_clique \
-        else None
-
     if multilayer or multilayer_self_links:
         network = representation.multilayer(hypergraph, multilayer_self_links)
 
@@ -50,7 +46,7 @@ def run(file,
     elif bipartite or bipartite_non_backtracking:
         network = representation.bipartite(hypergraph, bipartite_non_backtracking)
 
-        file_ending = "_non_backtracking" if bipartite_non_backtracking else "_backtracking"
+        file_ending = "_non_backtracking" if bipartite_non_backtracking else ""
         filename = "{}/{}{}".format(outdir, "bipartite", file_ending)
 
         def set_network(im: Infomap):
@@ -78,6 +74,7 @@ def run(file,
         network.write(filename + ".net")
 
     if not no_infomap:
+        infomap_args = None if clique_graph else "--directed"
         run_infomap(filename + ".ftree", set_network, infomap_args)
 
     return network

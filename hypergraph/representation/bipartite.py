@@ -21,15 +21,11 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
     edge_to_feature_id = {edge.id: bipartite_start_id + i
                           for i, edge in enumerate(edges)}
 
-    states = None
     get_state_id = defaultdict(lambda: len(get_state_id) + 1)
 
+    states = None
     if non_backtracking:
-        states = []
-
-        for node in nodes:
-            state_id = get_state_id[node.id]
-            states.append(StateNode(state_id, node.id))
+        states = [StateNode(get_state_id[node.id], node.id) for node in nodes]
 
     links = []
 

@@ -31,7 +31,6 @@ def create_network(hypergraph: HyperGraph, directed: bool) -> Network:
         links = [(source, target, weight)
                  for (source, target), weight in links.items()]
 
-
     else:
         w_ = w(edges, weights)
 
