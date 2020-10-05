@@ -29,6 +29,7 @@ def run(file,
         directed_clique=False,
         self_links=False,
         write_network=False,
+        two_level=True,
         no_infomap=False,
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
@@ -76,9 +77,9 @@ def run(file,
         network.write(filename + ".net")
 
     if not no_infomap:
-        infomap_args = ""
+        infomap_args = " --two-level" if two_level else ""
         infomap_args += "" if clique_graph or bipartite else " --directed"
-        infomap_args += " -k" if clique_graph or self_links else ""
+        infomap_args += " --include-self-links" if clique_graph or self_links else ""
 
         run_infomap(filename + ".ftree", set_network, infomap_args)
 
@@ -113,7 +114,9 @@ def main():
     parser.add_argument("-w", "--write-network", action="store_true", help="write network representation to file")
     parser.add_argument("-k", "--self-links", action="store_true",
                         help="include self links (does not apply to bipartite representations)")
-    parser.add_argument("--no-infomap", action="store_true", help="do not run infomap")
+    parser.add_argument("-2", "--two-level", action="store_true",
+                        help="only search for two-level partitions")
+    parser.add_argument("--no-infomap", action="store_true", help="do not run Infomap")
 
     output = parser.add_argument_group("representation")
     options = output.add_mutually_exclusive_group(required=True)
