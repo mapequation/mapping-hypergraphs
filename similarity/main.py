@@ -16,7 +16,7 @@ def read_files(filenames: Sequence[str]) -> Iterable[Iterable[TreeNode]]:
 
 
 def plot_heatmap(similarity, labels, filename=None):
-    mask = np.triu(np.ones_like(similarity, dtype=bool))
+    mask = np.triu(np.ones_like(similarity, dtype=bool), k=1)
 
     cmap = sns.color_palette("rocket_r", as_cmap=True)
 
