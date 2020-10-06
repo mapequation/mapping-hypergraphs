@@ -16,6 +16,7 @@ def run_infomap(filename,
                 self_links=False,
                 no_infomap=False,
                 two_level=False,
+                seed=123,
                 **kwargs):
     if no_infomap:
         return
@@ -24,6 +25,7 @@ def run_infomap(filename,
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
+    default_args += " --seed {}".format(seed)
 
     print("[infomap] running infomap...")
     im = Infomap("{} {}".format(default_args, args if args else ""))
@@ -128,6 +130,7 @@ def main():
     parser.add_argument("-2", "--two-level", action="store_true",
                         help="only search for two-level partitions")
     parser.add_argument("--no-infomap", action="store_true", help="do not run Infomap")
+    parser.add_argument("-s", "--seed", default=123, type=int, help="random seed")
 
     output = parser.add_argument_group("representation")
     options = output.add_mutually_exclusive_group(required=True)
