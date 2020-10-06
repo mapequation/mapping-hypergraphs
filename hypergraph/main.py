@@ -9,13 +9,27 @@ from network import Network
 InfomapCallback = Callable[[Infomap], None]
 
 
-def run_infomap(filename, callback: InfomapCallback, args=None):
+def run_infomap(filename,
+                callback: InfomapCallback,
+                args=None,
+                directed=True,
+                self_links=False,
+                no_infomap=False,
+                two_level=False,
+                **kwargs):
+    if no_infomap:
+        return
+
+    default_args = "--num-trials 10 --silent --teleportation-probability 0"
+    default_args += " --directed" if directed else ""
+    default_args += " --include-self-links" if self_links else ""
+    default_args += " --two-level" if two_level else ""
+
     print("[infomap] running infomap...")
-    im = Infomap("-N5 --silent -p0 {}".format(args if args else ""))
+    im = Infomap("{} {}".format(default_args, args if args else ""))
     callback(im)
     im.run()
     im.write_flow_tree(filename, states=True)
-
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
@@ -29,8 +43,6 @@ def run(file,
         directed_clique=False,
         self_links=False,
         write_network=False,
-        two_level=True,
-        no_infomap=False,
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
 
@@ -76,12 +88,11 @@ def run(file,
     if write_network:
         network.write(filename + ".net")
 
-    if not no_infomap:
-        infomap_args = " --two-level" if two_level else ""
-        infomap_args += "" if clique_graph or bipartite else " --directed"
-        infomap_args += " --include-self-links" if clique_graph or self_links else ""
-
-        run_infomap(filename + ".ftree", set_network, infomap_args)
+    run_infomap(filename + ".ftree",
+                set_network,
+                directed=not (clique_graph or bipartite),
+                self_links=self_links,
+                **kwargs)
 
     return network
 
