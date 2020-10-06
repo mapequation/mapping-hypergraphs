@@ -7,6 +7,8 @@ verify_ssl = true
 
 [packages]
 infomap = "*"
+sklearn = "*"
+seaborn = "*"
 
 [requires]
 python_version = "3.8"
