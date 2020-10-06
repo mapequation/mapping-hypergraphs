@@ -1,4 +1,5 @@
 import re
+from unicodedata import normalize
 
 
 def parse(tex):
@@ -93,6 +94,10 @@ def parse(tex):
 
         if authors:
             # normalize line
+            authors = normalize("NFD", authors) \
+                .encode("ascii", "ignore") \
+                .decode("ascii")
+
             authors = authors.strip() \
                 .lower() \
                 .rstrip(".") \
