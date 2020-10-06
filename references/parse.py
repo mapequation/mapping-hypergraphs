@@ -141,5 +141,5 @@ def parse(tex):
 
 
 if __name__ == "__main__":
-    with open("data/networks-beyond-pairwise-interactions-references.tex", "r") as fp:
+    with open("data/networks-beyond-pairwise-interactions-references.tex") as fp:
         parse(fp.read())

@@ -50,6 +50,6 @@ def hypergraph(refs, outfile):
 
 
 if __name__ == "__main__":
-    with open("data/networks-beyond-pairwise-interactions-references.tex", "r") as texfile:
-        with open("data/networks-beyond-pairwise-interactions.txt", "w") as outfile:
-            hypergraph(parse(texfile.read()), outfile)
+    with open("data/networks-beyond-pairwise-interactions-references.tex") as texfile, \
+            open("data/networks-beyond-pairwise-interactions.txt", "w") as outfile:
+        hypergraph(parse(texfile.read()), outfile)
