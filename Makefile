@@ -1,28 +1,52 @@
 OUTDIR := output
 DATA := data
-ALL_FLAGS = $(INPUT) $(OUTDIR)
+ARGS = $(INPUT) $(OUTDIR)
 
 # EXAMPLE
 .PHONY: example
 
 example: INPUT := $(DATA)/example.txt
-example: FLAGS := -w --teleportation-probability 0 $(ALL_FLAGS)
+example: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example: clean all_representations
 
 # REFERENCES
-.PHONY: references create_references
+.PHONY: references
 
-REFS := $(DATA)/networks-beyond-pairwise-interactions.txt
+REFS := $(DATA)/references.txt
+REFS_WEIGHTED := $(DATA)/references-weighted.txt
+TEX_FILE := $(DATA)/networks-beyond-pairwise-interactions-references.tex
+
+$(REFS):
+	python -m references $(TEX_FILE) $(REFS)
+
+$(REFS_WEIGHTED):
+	python -m references --omega-weighted --gamma-weighted $(TEX_FILE) $(REFS_WEIGHTED)
 
 references: INPUT := $(REFS)
-references: FLAGS := $(ALL_FLAGS)
-references: clean all_representations
+references:
+	@$(MAKE) clean
+	@$(MAKE) $(REFS)
+	@$(MAKE) all_representations FLAGS="$(ARGS)"
 
-TEX_FILE := $(DATA)/networks-beyond-pairwise-interactions-references.tex
-WEIGHTED := --omega-weighted --gamma-weighted
+references_weighted: INPUT := $(REFS_WEIGHTED)
+references_weighted:
+	@$(MAKE) clean
+	@$(MAKE) $(REFS_WEIGHTED)
+	@$(MAKE) weighted_representations FLAGS="$(ARGS)"
 
-create_references:
-	python -m references $(WEIGHTED) $(TEX_FILE) $(REFS)
+
+# SEEDS
+SEEDS = 1 2 3 4 5 6 7 8 9 10
+.PHONY: seeds $(SEEDS)
+
+seeds:
+	@$(MAKE) clean
+	@$(MAKE) $(REFS)
+	@$(MAKE) $(SEEDS)
+
+$(SEEDS): INPUT := $(REFS)
+$(SEEDS):
+	@$(MAKE) all_representations FLAGS="--seed $(@) $(ARGS)"
 
 # REPRESENTATIONS
 RUN := python -m hypergraph
@@ -43,6 +67,14 @@ all_representations: \
 	bipartite_non_backtracking \
 	clique \
 	clique_self_links \
+	clique_directed \
+	clique_directed_self_links \
+	multilayer \
+	multilayer_self_links
+
+weighted_representations: \
+	bipartite \
+	bipartite_non_backtracking \
 	clique_directed \
 	clique_directed_self_links \
 	multilayer \
