@@ -7,13 +7,13 @@
 5 "f"
 *Hyperedges
 # id nodes... omega
-1 1 2 3 10
-2 3 4 5 20
+1 1 2 3 1
+2 3 4 5 1
 *Weights
 # edge node gamma
 1 1 1
 1 2 1
 1 3 2
-2 3 1
+2 3 2
 2 4 1
-2 5 2
+2 5 1
