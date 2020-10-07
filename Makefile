@@ -10,7 +10,7 @@ example: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example: clean all_representations
 
 # REFERENCES
-.PHONY: references
+.PHONY: references references_weighted
 
 REFS := $(DATA)/references.txt
 REFS_WEIGHTED := $(DATA)/references-weighted.txt
