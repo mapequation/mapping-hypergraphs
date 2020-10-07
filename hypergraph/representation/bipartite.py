@@ -64,10 +64,12 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
                 if weight < 1e-10:
                     continue
 
+                source_id = u.id
                 target_id = v.id
                 feature_id = edge_to_feature_id[e2.id]
 
-                links[target_id, feature_id] += weight
+                links[source_id, feature_id] += weight
+                links[feature_id, target_id] += weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]

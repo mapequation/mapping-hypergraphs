@@ -98,7 +98,7 @@ def run(file,
 
     run_infomap(filename + ".ftree",
                 set_network,
-                directed=not (clique_graph or bipartite),
+                directed=not clique_graph,
                 self_links=self_links,
                 **kwargs)
 
