@@ -9,16 +9,19 @@ from network import Network
 
 InfomapCallback = Callable[[Infomap], None]
 
+_DEFAULT_SEED = 123
+_DEFAULT_TELEPORTATION_PROB = 0.15
 
-def run_infomap(filename,
+
+def run_infomap(basename: str,
                 callback: InfomapCallback,
-                args=None,
-                directed=True,
-                self_links=False,
-                no_infomap=False,
-                two_level=False,
-                seed=123,
-                teleportation_probability=0.15,
+                args: Optional[str] = None,
+                directed: bool = True,
+                self_links: bool = False,
+                no_infomap: bool = False,
+                two_level: bool = False,
+                seed: int = _DEFAULT_SEED,
+                teleportation_probability: float = _DEFAULT_TELEPORTATION_PROB,
                 **kwargs):
     if no_infomap:
         return
@@ -29,6 +32,10 @@ def run_infomap(filename,
     default_args += " --two-level" if two_level else ""
     default_args += " --seed {}".format(seed)
     default_args += " --teleportation-probability {}".format(teleportation_probability)
+
+    filename = basename
+    filename += "_seed_{}".format(seed) if seed != _DEFAULT_SEED else ""
+    filename += ".ftree"
 
     print("[infomap] running infomap...")
     im = Infomap("{} {}".format(default_args, args if args else ""))
@@ -96,7 +103,7 @@ def run(file,
     if write_network:
         network.write(filename + ".net")
 
-    run_infomap(filename + ".ftree",
+    run_infomap(filename,
                 set_network,
                 directed=not clique_graph,
                 self_links=self_links,
@@ -136,9 +143,9 @@ def main():
     parser.add_argument("-2", "--two-level", action="store_true",
                         help="only search for two-level partitions")
     parser.add_argument("--no-infomap", action="store_true", help="do not run Infomap")
-    parser.add_argument("-s", "--seed", default=123, type=int, help="random seed")
-    parser.add_argument("-p", "--teleportation-probability", default=0.15, type=float,
-                        help="probability to teleport in each step")
+    parser.add_argument("-s", "--seed", default=_DEFAULT_SEED, type=int, help="random seed")
+    parser.add_argument("-p", "--teleportation-probability", default=_DEFAULT_TELEPORTATION_PROB,
+                        type=float, help="probability to teleport in each step")
     parser.add_argument("-o", "--outfile")
 
     output = parser.add_argument_group("representation")
