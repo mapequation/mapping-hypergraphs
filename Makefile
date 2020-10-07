@@ -6,7 +6,7 @@ ALL_FLAGS = $(INPUT) $(OUTDIR)
 .PHONY: example
 
 example: INPUT := $(DATA)/example.txt
-example: FLAGS := --teleportation-probability 0 $(ALL_FLAGS)
+example: FLAGS := -w --teleportation-probability 0 $(ALL_FLAGS)
 example: clean all_representations
 
 # REFERENCES
