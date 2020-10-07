@@ -61,4 +61,4 @@ def write_hypergraph(hypergraph,
 if __name__ == "__main__":
     with open("data/networks-beyond-pairwise-interactions-references.tex") as texfile, \
             open("data/networks-beyond-pairwise-interactions.txt", "w") as outfile:
-        write_hypergraph(parse(texfile.read()), outfile)
+        write_hypergraph(parse(texfile), outfile)

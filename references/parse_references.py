@@ -2,7 +2,8 @@ import re
 from unicodedata import normalize
 
 
-def parse(tex):
+def parse(texfile, verbose=False):
+    tex = texfile.read()
     refs = list(map(lambda r: r.split("\n"),
                     tex.split("\n\n")))
 
@@ -123,7 +124,8 @@ def parse(tex):
                             and name[0] == complete_name[0] \
                             and name.endswith(" " + last_name):
                         author_list[i] = complete_name
-                        print("{} -> {}".format(name, complete_name))
+                        if verbose:
+                            print("{} -> {}".format(name, complete_name))
                         break
 
             references.append(tuple(author_list))
@@ -133,7 +135,8 @@ def parse(tex):
     for coauthors in references:
         unique_authors.update(coauthors)
 
-    print("-----------------------------")
+    if verbose:
+        print("-----------------------------")
     print("Parsed {}/{} references".format(len(references), len(refs)))
     print("Authors: {}".format(len(unique_authors)))
 
