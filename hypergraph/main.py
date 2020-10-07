@@ -18,15 +18,17 @@ def run_infomap(filename,
                 no_infomap=False,
                 two_level=False,
                 seed=123,
+                teleportation_probability=0.15,
                 **kwargs):
     if no_infomap:
         return
 
-    default_args = "--num-trials 10 --silent --teleportation-probability 0"
+    default_args = "--num-trials 10 --silent"
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
     default_args += " --seed {}".format(seed)
+    default_args += " --teleportation-probability {}".format(teleportation_probability)
 
     print("[infomap] running infomap...")
     im = Infomap("{} {}".format(default_args, args if args else ""))
@@ -135,6 +137,8 @@ def main():
                         help="only search for two-level partitions")
     parser.add_argument("--no-infomap", action="store_true", help="do not run Infomap")
     parser.add_argument("-s", "--seed", default=123, type=int, help="random seed")
+    parser.add_argument("-p", "--teleportation-probability", default=0.15, type=float,
+                        help="probability to teleport in each step")
     parser.add_argument("-o", "--outfile")
 
     output = parser.add_argument_group("representation")
