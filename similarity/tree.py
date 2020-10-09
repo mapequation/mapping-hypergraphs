@@ -1,9 +1,15 @@
 import re
 from dataclasses import dataclass
+from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
-from typing import Tuple, Optional, Iterable, List
+from typing import Tuple, Optional, Iterable, List, Callable
 
 Path = Tuple[int, ...]
+
+
+class Level(Enum):
+    TOP_MODULE = 0
+    LEAF_MODULE = -2
 
 
 @dataclass
@@ -14,6 +20,7 @@ class TreeNode:
     node_id: int
     state_id: Optional[int] = None
     layer_id: Optional[int] = None
+    is_bipartite: bool = False
 
     @property
     def rank(self) -> int:
@@ -28,11 +35,15 @@ class TreeNode:
         return self.path[-2]
 
     @property
-    def module(self) -> Tuple[int, ...]:
-        return self.path[:-1]
+    def module(self) -> str:
+        return ":".join(map(str, self.path[:-1]))
+
+    @property
+    def is_multilayer(self) -> bool:
+        return self.layer_id is not None
 
     @classmethod
-    def from_str(cls, line: str):
+    def from_str(cls, line: str, is_bipartite=False):
         name, state_id, layer_id = None, None, None
 
         match = re.search(r" \"([\w\s\-\']+)\" ", line.strip())
@@ -47,20 +58,30 @@ class TreeNode:
         if len(ids) == 2:
             state_id, node_id = ids
         elif len(ids) == 3:
+            if is_bipartite:
+                raise Exception("Parsed as bipartite but found layer id!")
             state_id, node_id, layer_id = ids
         else:
             node_id = ids[0]
 
-        return TreeNode(path, flow, name if name else str(node_id), node_id, state_id, layer_id)
+        return TreeNode(path, flow, name if name else str(node_id), node_id, state_id, layer_id, is_bipartite)
 
 
-def tree_nodes(lines: Iterable[str]) -> List[TreeNode]:
+NodeFilter = Callable[[str], bool]
+
+
+def is_feature_node(line: str) -> bool:
+    return "hyperedge" in line.lower()
+
+
+def tree_nodes(lines: Iterable[str],
+               bipartite=False,
+               node_filter: NodeFilter = is_feature_node) -> List[TreeNode]:
     tree_data = lambda line: not line.startswith("*")
     comment = lambda line: line.startswith("#")
-    feature_nodes = lambda line: "hyperedge" in line.lower()
 
-    return list(map(TreeNode.from_str,
-                    filterfalse(feature_nodes, takewhile(tree_data, dropwhile(comment, lines)))))
+    return list(TreeNode.from_str(line, bipartite)
+                for line in filterfalse(node_filter, takewhile(tree_data, dropwhile(comment, lines))))
 
 
 if __name__ == "__main__":
