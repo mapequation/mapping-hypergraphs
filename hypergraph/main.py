@@ -5,7 +5,7 @@ from infomap import Infomap
 
 from hypergraph import representation
 from hypergraph.io import read, parse
-from network import Network
+from hypergraph.network import Network
 
 InfomapCallback = Callable[[Infomap], None]
 

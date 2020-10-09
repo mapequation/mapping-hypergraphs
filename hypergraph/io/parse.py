@@ -2,7 +2,7 @@ import re
 from collections import namedtuple
 from typing import Dict, List, Tuple, Mapping, Sequence
 
-from network import Node
+from hypergraph.network import Node
 
 HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
 Gamma = namedtuple("Gamma", "edge, node, gamma")

@@ -3,7 +3,7 @@ from itertools import product
 
 from hypergraph.io import HyperGraph
 from hypergraph.transition import p
-from network import StateNode, Node, BipartiteNetwork
+from hypergraph.network import StateNode, Node, BipartiteNetwork
 
 
 def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteNetwork:

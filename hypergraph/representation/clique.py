@@ -3,7 +3,7 @@ from itertools import combinations_with_replacement, product
 
 from hypergraph.io import HyperGraph
 from hypergraph.transition import w, p
-from network import Network
+from hypergraph.network import Network
 
 
 def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> Network:
