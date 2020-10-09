@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from itertools import combinations
+from itertools import combinations_with_replacement
 from typing import Sequence, Optional, Tuple, List, Mapping
 
 import matplotlib.pyplot as plt
@@ -64,7 +64,7 @@ def main(filenames: Sequence[str]):
 
     index = defaultdict(lambda: len(index))
 
-    for network1, network2 in combinations(networks, 2):
+    for network1, network2 in combinations_with_replacement(networks, 2):
         j = index[network1.pretty_filename]
         i = index[network2.pretty_filename]
         labels1, ids1 = labels(network1.nodes, level=level)
