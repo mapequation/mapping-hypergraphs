@@ -9,14 +9,13 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import adjusted_mutual_info_score
 
-from similarity.helpers import pretty_filename
-from similarity.tree import TreeNode, tree_nodes, Level
+from similarity.tree import TreeNode, Level, Tree
 
 Labels = List[int]
 Ids = Mapping[str, int]
 
 
-def labels(network: Sequence[TreeNode], ids: Optional[Ids] = None, level: Level = Level.TOP_MODULE, **kwargs) \
+def labels(nodes: Sequence[TreeNode], ids: Optional[Ids] = None, level: Level = Level.TOP_MODULE, **kwargs) \
         -> Tuple[Labels, Ids]:
     if ids:
         ids_ = defaultdict(lambda: len(ids_), ids)
@@ -25,7 +24,7 @@ def labels(network: Sequence[TreeNode], ids: Optional[Ids] = None, level: Level 
 
     labels_ = {}
 
-    for node in network:
+    for node in nodes:
         node_id = ids_[node.name]
 
         if level == Level.TOP_MODULE:
@@ -56,26 +55,20 @@ def plot_heatmap(data: pd.DataFrame, **kwargs) -> plt.Figure:
     return plot.get_figure()
 
 
-def read_files(filenames: Sequence[str]):
-    for filename in filenames:
-        with open(filename) as fp:
-            yield tree_nodes(fp.readlines(), filename.startswith("bipartite"))
-
-
 def main(filenames: Sequence[str]):
-    networks = read_files(filenames)
+    networks = [Tree.from_file(name) for name in filenames]
 
     level = Level.LEAF_MODULE
 
-    ami = np.zeros(shape=(len(filenames),) * 2)
+    ami = np.zeros(shape=(len(networks),) * 2)
 
     index = defaultdict(lambda: len(index))
 
-    for (network1, name1), (network2, name2) in combinations(zip(networks, filenames), 2):
-        j = index[pretty_filename(name1)]
-        i = index[pretty_filename(name2)]
-        labels1, ids1 = labels(network1, level=level)
-        labels2, ids2 = labels(network2, ids1, level=level)
+    for network1, network2 in combinations(networks, 2):
+        j = index[network1.pretty_filename]
+        i = index[network2.pretty_filename]
+        labels1, ids1 = labels(network1.nodes, level=level)
+        labels2, ids2 = labels(network2.nodes, ids1, level=level)
 
         if len(labels1) != len(labels2):
             continue
