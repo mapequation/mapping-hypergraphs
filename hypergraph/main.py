@@ -14,6 +14,7 @@ _DEFAULT_TELEPORTATION_PROB = 0.15
 
 
 def run_infomap(basename: str,
+                outdir: str,
                 callback: InfomapCallback,
                 args: Optional[str] = None,
                 directed: bool = True,
@@ -26,22 +27,22 @@ def run_infomap(basename: str,
     if no_infomap:
         return
 
+    filename = basename + "_seed_{}".format(seed) if seed != _DEFAULT_SEED else ""
+
     default_args = "--num-trials 10 --silent"
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
     default_args += " --seed {}".format(seed)
     default_args += " --teleportation-probability {}".format(teleportation_probability)
-
-    filename = basename
-    filename += "_seed_{}".format(seed) if seed != _DEFAULT_SEED else ""
-    filename += ".ftree"
+    default_args += " --out-name {} ".format(filename)
+    default_args += outdir
 
     print("[infomap] running infomap...")
     im = Infomap("{} {}".format(default_args, args if args else ""))
     callback(im)
     im.run()
-    im.write_flow_tree(filename, states=True)
+    im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
@@ -98,12 +99,11 @@ def run(file,
     else:
         return
 
-    filename = path.join(outdir, basename)
-
     if write_network:
-        network.write(filename + ".net")
+        network.write(path.join(outdir, basename) + ".net")
 
-    run_infomap(filename,
+    run_infomap(basename,
+                outdir,
                 set_network,
                 directed=not clique_graph,
                 self_links=self_links,
