@@ -1,7 +1,8 @@
+import glob
 import os
 from collections import defaultdict
 from itertools import combinations_with_replacement
-from typing import Sequence, Optional, Tuple, List, Mapping
+from typing import Sequence, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,35 +10,34 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import adjusted_mutual_info_score
 
-from similarity.tree import TreeNode, Level, Tree
+from similarity.tree import TreeNode, Level, Tree, match_ids
+from similarity.wjaccard import wjaccard
 
 Labels = List[int]
-Ids = Mapping[str, int]
 
 
-def labels(nodes: Sequence[TreeNode], ids: Optional[Ids] = None, level: Level = Level.TOP_MODULE, **kwargs) \
-        -> Tuple[Labels, Ids]:
-    if ids:
-        ids_ = defaultdict(lambda: len(ids_), ids)
-    else:
-        ids_ = defaultdict(lambda: len(ids_))
-
+def labels(nodes: Sequence[TreeNode], level: Level = Level.TOP_MODULE) -> Labels:
     labels_ = {}
 
     for node in nodes:
-        node_id = ids_[node.name]
-
         if level == Level.TOP_MODULE:
-            labels_[node_id] = node.top_module
+            labels_[node.state_id] = node.top_module
         else:
-            labels_[node_id] = node.module
+            labels_[node.state_id] = node.module
 
-    labels_ = [labels_[node_id] for node_id in sorted(labels_.keys())]
-
-    return labels_, dict(ids_)
+    return [labels_[node_id] for node_id in sorted(labels_.keys())]
 
 
-def plot_heatmap(data: pd.DataFrame, **kwargs) -> plt.Figure:
+def labels_pair(nodes1: Sequence[TreeNode], nodes2: Sequence[TreeNode], **kwargs) -> Tuple[Labels, Labels]:
+    labels1, labels2 = labels(nodes1, **kwargs), labels(nodes2, **kwargs)
+
+    if len(labels1) != len(labels2):
+        raise RuntimeWarning("Different sets of labels")
+
+    return labels1, labels2
+
+
+def plot_heatmap(data: pd.DataFrame, title: str, **kwargs) -> plt.Figure:
     plt.figure()
 
     plot = sns.heatmap(data,
@@ -45,10 +45,13 @@ def plot_heatmap(data: pd.DataFrame, **kwargs) -> plt.Figure:
                        yticklabels=data.columns,
                        cmap=(sns.color_palette("viridis", as_cmap=True)),
                        annot=True,
+                       annot_kws={"fontsize": 8},
+                       fmt=".2g",
                        square=True,
                        linewidths=.5,
                        **kwargs)
 
+    plt.title(title)
     plt.subplots_adjust(bottom=0.28)
     plt.show()
 
@@ -56,27 +59,48 @@ def plot_heatmap(data: pd.DataFrame, **kwargs) -> plt.Figure:
 
 
 def main(filenames: Sequence[str]):
-    networks = [Tree.from_file(name) for name in filenames]
+    networks = [Tree.from_file(name, is_multilayer="multilayer" in name, is_bipartite="bipartite" in name)
+                for name in filenames
+                if not "multilayer.ftree" in name]
 
-    level = Level.LEAF_MODULE
+    multilayer = next((network for network in networks if "multilayer_self_links" in network.filename), None)
 
-    ami = np.zeros(shape=(len(networks),) * 2)
+    if multilayer:
+        match_ids(multilayer, (network for network in networks if network != multilayer))
+
+    outdir = "output/matched_ids"
+    existing_files = glob.glob(outdir + "/*")
+    for f in existing_files:
+        os.remove(f)
+
+    for network in networks:
+        with open(os.path.join(outdir, network.filename), "w") as fp:
+            for node in network.nodes:
+                node.write(fp)
+
+    ami_top = np.zeros(shape=(len(networks),) * 2)
+    ami_leaf = np.zeros_like(ami_top)
+    jaccard = np.zeros_like(ami_top)
 
     index = defaultdict(lambda: len(index))
 
     for network1, network2 in combinations_with_replacement(networks, 2):
         j = index[network1.pretty_filename]
         i = index[network2.pretty_filename]
-        labels1, ids1 = labels(network1.nodes, level=level)
-        labels2, ids2 = labels(network2.nodes, ids1, level=level)
 
-        if len(labels1) != len(labels2):
-            continue
+        ami_top[i, j] = adjusted_mutual_info_score(
+            *labels_pair(network1.nodes, network2.nodes, level=Level.TOP_MODULE))
 
-        ami[i][j] = adjusted_mutual_info_score(labels1, labels2)
+        ami_leaf[i, j] = adjusted_mutual_info_score(
+            *labels_pair(network1.nodes, network2.nodes, level=Level.LEAF_MODULE))
+
+        jaccard[i, j] = 1 - wjaccard(os.path.join("output/matched_ids", network1.filename),
+                                     os.path.join("output/matched_ids", network2.filename))
 
     ticklabels = list(index.keys())
-    plot_heatmap(pd.DataFrame(data=ami, columns=ticklabels))
+    plot_heatmap(pd.DataFrame(data=ami_top, columns=ticklabels), title="AMI (Top modules)")
+    plot_heatmap(pd.DataFrame(data=ami_leaf, columns=ticklabels), title="AMI (Leaf modules)")
+    plot_heatmap(pd.DataFrame(data=jaccard, columns=ticklabels), title="1 - Weighted Jaccard distance")
 
 
 if __name__ == "__main__":

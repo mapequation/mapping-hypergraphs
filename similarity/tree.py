@@ -1,5 +1,6 @@
 import os
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
@@ -18,9 +19,16 @@ class TreeNode:
     path: Path
     flow: float
     name: str
-    node_id: int
+    id: int
     state_id: Optional[int] = None
     layer_id: Optional[int] = None
+
+    def write(self, fp):
+        fp.write("{} {} \"{}\" {} {}\n".format(":".join(map(str, self.path)),
+                                               self.flow,
+                                               self.name,
+                                               self.state_id if self.state_id else self.id,
+                                               self.id))
 
     @property
     def rank(self) -> int:
@@ -91,7 +99,7 @@ class Tree:
     @classmethod
     def from_file(cls, filename: str, **kwargs):
         with open(filename) as fp:
-            return Tree.from_iter(fp.readlines(), filename=filename, **kwargs)
+            return Tree.from_iter(fp.readlines(), filename=os.path.basename(filename), **kwargs)
 
     @classmethod
     def from_iter(cls,
@@ -105,6 +113,45 @@ class Tree:
             nodes = filterfalse(node_filter, nodes)
 
         return cls(list(map(TreeNode.from_str, nodes)), **kwargs)
+
+
+def match_ids(ground_truth: Tree, trees: Iterable[Tree]):
+    state_ids = defaultdict(set)  # node id -> set of state other_state_ids
+    layer_ids = defaultdict(int)  # (node id, layer id) -> state id
+
+    for node in ground_truth.nodes:
+        state_ids[node.id].add(node.state_id)
+        layer_ids[node.id, node.layer_id] = node.state_id
+
+    state_ids = dict(state_ids)
+    layer_ids = dict(layer_ids)
+
+    for tree in trees:
+        if tree.is_multilayer:
+            for node in tree.nodes:
+                try:
+                    node.state_id = layer_ids[node.id, node.layer_id]
+                except KeyError:
+                    print(node)
+                    continue
+        else:
+            added_nodes = []
+
+            for node in tree.nodes:
+                # set the state id of the already existing node
+                try:
+                    other_state_ids = state_ids[node.id].copy()
+                    divided_flow = node.flow / len(other_state_ids)
+                    node.flow = divided_flow
+                    node.state_id = other_state_ids.pop()
+                except KeyError:
+                    print(node)
+                    continue
+                # add nodes for each remaining state node
+                added_nodes.extend(TreeNode(node.path, divided_flow, node.name, node.id, other_state_id)
+                                   for other_state_id in other_state_ids)
+
+            tree.nodes.extend(added_nodes)
 
 
 if __name__ == "__main__":
