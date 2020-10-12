@@ -27,9 +27,9 @@ def run_infomap(basename: str,
     if no_infomap:
         return
 
-    filename = basename + "_seed_{}".format(seed) if seed != _DEFAULT_SEED else ""
+    filename = basename + ("_seed_{}".format(seed) if seed != _DEFAULT_SEED else "")
 
-    default_args = "--num-trials 10 --silent"
+    default_args = "--num-trials 10 --silent -o states"
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
