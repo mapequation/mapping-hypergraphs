@@ -94,12 +94,21 @@ class Tree:
         name, _ = os.path.splitext(basename)
         name = re.sub(r"_seed_\d+$", "", name)
 
-        return name.replace("_", " ")
+        representation, *kind = name.replace("_", " ").split()
+        kind = " ".join(kind)
+
+        if "backtracking" in kind:
+            kind = "non-bt"
+
+        if "directed" in kind:
+            kind = kind.replace("directed", "dir.")
+
+        return "{} ({})".format(representation, kind) if kind else representation
 
     @classmethod
     def from_file(cls, filename: str, **kwargs):
         with open(filename) as fp:
-            return Tree.from_iter(fp.readlines(), filename=os.path.basename(filename), **kwargs)
+            return Tree.from_iter(fp.readlines(), filename=filename, **kwargs)
 
     @classmethod
     def from_iter(cls,

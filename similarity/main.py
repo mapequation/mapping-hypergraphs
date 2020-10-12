@@ -74,7 +74,7 @@ def main(filenames: Sequence[str]):
         os.remove(f)
 
     for network in networks:
-        with open(os.path.join(outdir, network.filename), "w") as fp:
+        with open(os.path.join(outdir, os.path.basename(network.filename)), "w") as fp:
             for node in network.nodes:
                 node.write(fp)
 
@@ -94,8 +94,8 @@ def main(filenames: Sequence[str]):
         ami_leaf[i, j] = adjusted_mutual_info_score(
             *labels_pair(network1.nodes, network2.nodes, level=Level.LEAF_MODULE))
 
-        jaccard[i, j] = 1 - wjaccard(os.path.join("output/matched_ids", network1.filename),
-                                     os.path.join("output/matched_ids", network2.filename))
+        jaccard[i, j] = 1 - wjaccard(os.path.join("output/matched_ids", os.path.basename(network1.filename)),
+                                     os.path.join("output/matched_ids", os.path.basename(network2.filename)))
 
     ticklabels = list(index.keys())
     plot_heatmap(pd.DataFrame(data=ami_top, columns=ticklabels), title="AMI (Top modules)")
