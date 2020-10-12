@@ -1,7 +1,7 @@
 import glob
 import os
 from collections import defaultdict
-from itertools import combinations_with_replacement
+from itertools import combinations_with_replacement, takewhile, dropwhile
 from typing import Sequence, List, Tuple
 
 import matplotlib.pyplot as plt
@@ -58,10 +58,43 @@ def plot_heatmap(data: pd.DataFrame, title: str, **kwargs) -> plt.Figure:
     return plot.get_figure()
 
 
+def summarize(networks: Sequence[Tree]):
+    summary = []
+
+    for network in networks:
+        name = network.filename
+
+        with open(name) as fp:
+            lines = fp.readlines()
+            header = takewhile(lambda line: line.startswith("#"), lines)
+            # partitioned into 4 levels with 286 top modules
+            levels = int(next(filter(lambda line: line.startswith("# partitioned into"), header)).split()[3])
+            # codelength 3.11764 bits
+            codelength = float(next(filter(lambda line: line.startswith("# codelength"), header)).split()[2])
+
+            states_filename = os.path.splitext(name)[0] + "_states.net"
+
+            with open(states_filename) as states_fp:
+                states_lines = states_fp.readlines()
+
+                num_states = len(list(takewhile(lambda line: not line.startswith("*Links"),
+                                                dropwhile(lambda line: not line.startswith("# stateId physicalId"),
+                                                          states_lines))))
+
+                num_links = len(list(dropwhile(lambda line: not line.startswith("*Links"), states_lines)))
+
+                summary.append((network.pretty_filename, num_states, num_links, levels, codelength))
+
+    for line in summary:
+        print("{:26} & {} & {:5} & {} & {:.3f} \\\\".format(*line))
+
+
 def main(filenames: Sequence[str]):
     networks = [Tree.from_file(name, is_multilayer="multilayer" in name, is_bipartite="bipartite" in name)
                 for name in filenames
                 if not "multilayer.ftree" in name]
+
+    summarize(networks)
 
     multilayer = next((network for network in networks if "multilayer_self_links" in network.filename), None)
 
