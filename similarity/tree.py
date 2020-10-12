@@ -138,24 +138,35 @@ def match_ids(ground_truth: Tree, trees: Iterable[Tree]):
     for tree in trees:
         if tree.is_multilayer:
             for node in tree.nodes:
-                try:
-                    node.state_id = layer_ids[node.id, node.layer_id]
-                except KeyError:
-                    print(node)
-                    continue
+                node.state_id = layer_ids[node.id, node.layer_id]
+
+            tree_layer_ids = {(node.id, node.layer_id) for node in tree.nodes}
+
+            missing_nodes = (node for node in ground_truth.nodes
+                             if not (node.id, node.layer_id) in tree_layer_ids)
+
+            first_free_module_id = max({node.top_module for node in tree.nodes}) + 1
+
+            for missing_node in missing_nodes:
+                tree.nodes.append(TreeNode((first_free_module_id, 1),
+                                           0,
+                                           missing_node.name,
+                                           missing_node.id,
+                                           missing_node.state_id))
+                first_free_module_id += 1
+
         else:
             added_nodes = []
 
             for node in tree.nodes:
                 # set the state id of the already existing node
-                try:
-                    other_state_ids = state_ids[node.id].copy()
-                    divided_flow = node.flow / len(other_state_ids)
-                    node.flow = divided_flow
-                    node.state_id = other_state_ids.pop()
-                except KeyError:
-                    print(node)
-                    continue
+                other_state_ids = state_ids[node.id].copy()
+
+                divided_flow = node.flow / len(other_state_ids)
+                node.flow = divided_flow
+
+                node.state_id = other_state_ids.pop()
+
                 # add nodes for each remaining state node
                 added_nodes.extend(TreeNode(node.path, divided_flow, node.name, node.id, other_state_id)
                                    for other_state_id in other_state_ids)

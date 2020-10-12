@@ -91,8 +91,7 @@ def summarize(networks: Sequence[Tree]):
 
 def main(filenames: Sequence[str]):
     networks = [Tree.from_file(name, is_multilayer="multilayer" in name, is_bipartite="bipartite" in name)
-                for name in filenames
-                if not "multilayer.ftree" in name]
+                for name in filenames]
 
     summarize(networks)
 
