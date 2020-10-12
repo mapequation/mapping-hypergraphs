@@ -30,7 +30,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
 
         for e1, e2 in product(edges, edges):
             for u, v in product(e1.nodes, e2.nodes):
-                if u == v:
+                if u.id == v.id:
                     continue
 
                 weight = p_(e1, u, e2, v, self_links=False)

@@ -18,7 +18,7 @@ def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> 
 
         for e1, e2 in product(edges, edges):
             for u, v in product(e1.nodes, e2.nodes):
-                if not self_links and u == v:
+                if not self_links and u.id == v.id:
                     continue
 
                 weight = p_(e1, u, e2, v, self_links)
