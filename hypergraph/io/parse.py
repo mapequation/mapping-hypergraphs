@@ -23,17 +23,19 @@ def parse_nodes(lines: Sequence[str]) -> Dict[int, Node]:
 
 
 def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEdge]:
-    lines = (map(int, line.split()) for line in lines)
+    lines_ = (tuple(map(int, first)) + (float(omega),)
+              for *first, omega in map(lambda line: line.split(), lines))
 
     return [HyperEdge(edge_id, set(nodes[node_id] for node_id in node_ids), omega)
-            for edge_id, *node_ids, omega in lines]
+            for edge_id, *node_ids, omega in lines_]
 
 
 def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma]:
-    lines = (map(int, line.split()) for line in lines)
+    lines_ = (tuple(map(int, first)) + (float(gamma),)
+              for *first, gamma in map(lambda line: line.split(), lines))
 
     return [Gamma(edge, nodes[node_id], gamma)
-            for edge, node_id, gamma in lines]
+            for edge, node_id, gamma in lines_]
 
 
 def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGraph:
@@ -49,3 +51,23 @@ def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGrap
     weights = parse_weights(weights_lines, nodes)
 
     return list(nodes.values()), edges, weights
+
+
+if __name__ == "__main__":
+    nodes = [
+        "1 \"a\"",
+        "12 \"b\"",
+        "123 \"c\""
+    ]
+    edges = [
+        "1 12 123 3.13",
+        "2 1 0",
+    ]
+    weights = [
+        "1 12 0.0",
+        "1 123 1",
+        "2 1 3.13"
+    ]
+    n = parse_nodes(nodes)
+    print(parse_edges(edges, n))
+    print(parse_weights(weights, n))
