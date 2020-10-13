@@ -1,5 +1,6 @@
 from typing import Tuple, Sequence
 
+from references.get_citations import get_citations
 from references.parse_references import parse
 
 
@@ -16,12 +17,16 @@ def weight(edge_id: int, node_id: int, gamma: int) -> str:
     return "{} {} {}\n".format(edge_id, node_id, gamma)
 
 
-def omega_unweighted(_: int) -> int:
+def omega_unweighted(*_) -> int:
     return 1
 
 
-def omega_weighted(n: int) -> int:
-    return n
+def omega_weighted(node_ids: Tuple[int, ...], *_) -> int:
+    return len(node_ids)
+
+
+def omega_citations(_, *args) -> int:
+    return get_citations(*args)
 
 
 def gamma_unweighted(n: int) -> Tuple[int, ...]:
@@ -39,18 +44,21 @@ def write_hypergraph(hypergraph,
                      outfile,
                      omega_function=omega_unweighted,
                      gamma_function=gamma_unweighted):
-    unique_nodes = {node for nodes in hypergraph for node in nodes}
-    nodes = {name: i + 1 for i, name in enumerate(unique_nodes)}
+    unique_nodes = {node for nodes in hypergraph for node in nodes.authors}
+    nodes = {name: i + 1 for i, name in enumerate(sorted(unique_nodes))}
 
     outfile.write("*Vertices\n")
     outfile.writelines(vertex(node_id, name) for name, node_id in nodes.items())
 
-    edges = {i + 1: tuple(nodes[name] for name in names)
-             for i, names in enumerate(hypergraph)}
+    edges = {i + 1: tuple(nodes[name] for name in node.authors)
+             for i, node in enumerate(hypergraph)}
+
+    articles = {i + 1: (node.title, node.authors[0])
+                for i, node in enumerate(hypergraph)}
 
     outfile.write("*Hyperedges\n")
-    outfile.writelines(hyperedge(edge_id, node_ids, omega_function(len(node_ids)))
-                       for edge_id, node_ids in edges.items())
+    outfile.writelines(hyperedge(edge_id, edge, omega_function(edge, *articles[edge_id], edge_id))
+                       for edge_id, edge in edges.items())
 
     outfile.write("*Weights\n")
     outfile.writelines(weight(edge_id, node_id, gamma)
@@ -61,4 +69,4 @@ def write_hypergraph(hypergraph,
 if __name__ == "__main__":
     with open("data/networks-beyond-pairwise-interactions-references.tex") as texfile, \
             open("data/networks-beyond-pairwise-interactions.txt", "w") as outfile:
-        write_hypergraph(parse(texfile), outfile)
+        write_hypergraph(parse(texfile), outfile, omega_function=omega_citations)

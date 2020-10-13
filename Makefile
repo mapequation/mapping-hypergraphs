@@ -17,10 +17,10 @@ REFS_WEIGHTED := $(DATA)/references-weighted.txt
 TEX_FILE := $(DATA)/networks-beyond-pairwise-interactions-references.tex
 
 $(REFS):
-	python -m references --omega-weighted $(TEX_FILE) $(REFS)
+	python -m references --omega citations $(TEX_FILE) $(REFS)
 
 $(REFS_WEIGHTED):
-	python -m references --omega-weighted --gamma-weighted $(TEX_FILE) $(REFS_WEIGHTED)
+	python -m references --omega citations --gamma-weighted $(TEX_FILE) $(REFS_WEIGHTED)
 
 references: INPUT := $(REFS)
 references:

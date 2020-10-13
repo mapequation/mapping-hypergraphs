@@ -1,5 +1,8 @@
 import re
+from collections import namedtuple
 from unicodedata import normalize
+
+Article = namedtuple("Article", "authors, title")
 
 
 def parse(texfile, verbose=False):
@@ -67,11 +70,13 @@ def parse(texfile, verbose=False):
 
     for ref in refs:
         authors = None
+        title = None
         bibitem_parsed = False
         authors_parsed = False
+        title_parsed = False
 
         for line in ref:
-            if line.startswith("\\bibitem"):
+            if line.startswith(r"\bibitem"):
                 # is reference label in the first line?
                 bibitem_parsed = re.search(r"\[.+]{\S+?}", line)
                 continue
@@ -85,13 +90,25 @@ def parse(texfile, verbose=False):
 
             if authors_parsed or line.startswith(r"\newblock"):
                 authors_parsed = True
-                continue
 
             if not authors_parsed:
                 if authors:
                     authors += " " + line
                 else:
                     authors = line
+
+            elif not title_parsed and line.startswith(r"\newblock"):
+                match = re.match(r"\\newblock (.+)$", line)
+                if match:
+                    title_parsed = True
+                    title = match[1] \
+                        .strip() \
+                        .replace("{", "") \
+                        .replace("}", "") \
+                        .replace(r"\emph", "")
+
+        if not authors_parsed or not title_parsed:
+            raise RuntimeError("Could not parse authors or title")
 
         if authors:
             # normalize line
@@ -128,11 +145,11 @@ def parse(texfile, verbose=False):
                             print("{} -> {}".format(name, complete_name))
                         break
 
-            references.append(tuple(author_list))
+            references.append(Article(tuple(author_list), title))
 
     unique_authors = set()
 
-    for coauthors in references:
+    for coauthors, _ in references:
         unique_authors.update(coauthors)
 
     if verbose:
@@ -145,4 +162,4 @@ def parse(texfile, verbose=False):
 
 if __name__ == "__main__":
     with open("data/networks-beyond-pairwise-interactions-references.tex") as fp:
-        parse(fp.read())
+        parse(fp)

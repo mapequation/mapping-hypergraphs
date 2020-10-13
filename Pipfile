@@ -9,6 +9,7 @@ verify_ssl = true
 infomap = "*"
 sklearn = "*"
 seaborn = "*"
+scholarly = "*"
 
 [requires]
 python_version = "3.8"
