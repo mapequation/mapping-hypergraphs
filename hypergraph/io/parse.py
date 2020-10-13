@@ -38,6 +38,11 @@ def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma
             for edge, node_id, gamma in lines_]
 
 
+def unit_weights(edges: Sequence[HyperEdge]):
+    return [Gamma(edge.id, node, float(1))
+            for edge in edges for node in edge.nodes]
+
+
 def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGraph:
     nodes_lines, edges_lines, weights_lines = data
 
@@ -47,8 +52,12 @@ def parse(data: Tuple[Sequence[str], Sequence[str], Sequence[str]]) -> HyperGrap
     print("[parse] parsing edges...")
     edges = parse_edges(edges_lines, nodes)
 
-    print("[parse] parsing weights...")
-    weights = parse_weights(weights_lines, nodes)
+    if len(weights_lines):
+        print("[parse] parsing weights...")
+        weights = parse_weights(weights_lines, nodes)
+    else:
+        print("[parse] no weights found, assigning unit weights...")
+        weights = unit_weights(edges)
 
     return list(nodes.values()), edges, weights
 
@@ -69,5 +78,8 @@ if __name__ == "__main__":
         "2 1 3.13"
     ]
     n = parse_nodes(nodes)
-    print(parse_edges(edges, n))
+    print(n)
+    e = parse_edges(edges, n)
+    print(e)
     print(parse_weights(weights, n))
+    print(unit_weights(e))
