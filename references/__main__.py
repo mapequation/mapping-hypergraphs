@@ -3,7 +3,7 @@ from argparse import ArgumentParser, FileType
 from references.parse_references import parse
 from references.write_hypergraph import write_hypergraph, \
     gamma_unweighted, gamma_weighted, \
-    omega_unweighted, omega_weighted, omega_citations
+    omega_unweighted, omega_weighted, omega_citations, omega_log_citations
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("outfile", type=FileType("w"))
     parser.add_argument("--gamma-weighted", dest="gamma_function",
                         default=gamma_unweighted, const=gamma_weighted, action="store_const")
-    parser.add_argument("--omega", choices=("unweighted", "weighted", "citations"),
+    parser.add_argument("--omega", choices=("unweighted", "weighted", "citations", "log-citations"),
                         default="weighted")
     parser.add_argument("--verbose", action="store_true")
 
@@ -21,7 +21,8 @@ if __name__ == "__main__":
     omega_functions = {
         "unweighted": omega_unweighted,
         "weighted": omega_weighted,
-        "citations": omega_citations
+        "citations": omega_citations,
+        "log-citations": omega_log_citations
     }
 
     write_hypergraph(parse(args.infile, args.verbose),
