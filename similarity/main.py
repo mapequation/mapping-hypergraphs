@@ -2,39 +2,16 @@ import glob
 import os
 from collections import defaultdict
 from itertools import combinations_with_replacement, takewhile, dropwhile
-from typing import Sequence, List, Tuple
+from typing import Sequence, Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.metrics import adjusted_mutual_info_score
 
-from similarity.tree import TreeNode, Level, Tree, match_ids
+from similarity.ami import ami
+from similarity.tree import TreeNode, Level, Tree
 from similarity.wjaccard import wjaccard
-
-Labels = List[int]
-
-
-def labels(nodes: Sequence[TreeNode], level: Level = Level.TOP_MODULE) -> Labels:
-    labels_ = {}
-
-    for node in nodes:
-        if level == Level.TOP_MODULE:
-            labels_[node.state_id] = node.top_module
-        else:
-            labels_[node.state_id] = node.module
-
-    return [labels_[node_id] for node_id in sorted(labels_.keys())]
-
-
-def labels_pair(nodes1: Sequence[TreeNode], nodes2: Sequence[TreeNode], **kwargs) -> Tuple[Labels, Labels]:
-    labels1, labels2 = labels(nodes1, **kwargs), labels(nodes2, **kwargs)
-
-    if len(labels1) != len(labels2):
-        raise RuntimeWarning("Different sets of labels")
-
-    return labels1, labels2
 
 
 def plot_heatmap(data: pd.DataFrame, title: str, **kwargs) -> plt.Figure:
@@ -56,6 +33,59 @@ def plot_heatmap(data: pd.DataFrame, title: str, **kwargs) -> plt.Figure:
     plt.show()
 
     return plot.get_figure()
+
+
+def match_ids(ground_truth: Tree, trees: Iterable[Tree]):
+    state_ids = defaultdict(set)  # node id -> set of state other_state_ids
+    layer_ids = defaultdict(int)  # (node id, layer id) -> state id
+
+    for node in ground_truth.nodes:
+        state_ids[node.id].add(node.state_id)
+        layer_ids[node.id, node.layer_id] = node.state_id
+
+    state_ids = dict(state_ids)
+    layer_ids = dict(layer_ids)
+
+    for tree in trees:
+        if tree.is_multilayer:
+            multilayer_state_ids = set()
+
+            for node in tree.nodes:
+                node.state_id = layer_ids[node.id, node.layer_id]
+                multilayer_state_ids.add(node.state_id)
+
+            missing_nodes = (node for node in ground_truth.nodes
+                             if node.state_id not in multilayer_state_ids)
+
+            first_free_module_id = max(node.top_module for node in tree.nodes) + 1
+
+            tree.nodes.extend(TreeNode((first_free_module_id + i, 1),
+                                       0,
+                                       missing_node.name,
+                                       missing_node.id,
+                                       missing_node.state_id)
+                              for i, missing_node in enumerate(missing_nodes))
+
+        else:
+            missing_nodes = []
+
+            for node in tree.nodes:
+                # 1. set the state id of the already existing node
+                # 2. add nodes for each remaining state node
+                # 3. divide the flow evenly between them
+                other_state_ids = state_ids[node.id].copy()
+
+                node.flow /= len(other_state_ids)
+                node.state_id = other_state_ids.pop()
+
+                missing_nodes.extend(TreeNode(node.path,
+                                              node.flow,
+                                              node.name,
+                                              node.id,
+                                              other_state_id)
+                                     for other_state_id in other_state_ids)
+
+            tree.nodes.extend(missing_nodes)
 
 
 def summarize(networks: Sequence[Tree]):
@@ -120,11 +150,9 @@ def main(filenames: Sequence[str]):
         j = index[network1.pretty_filename]
         i = index[network2.pretty_filename]
 
-        ami_top[i, j] = adjusted_mutual_info_score(
-            *labels_pair(network1.nodes, network2.nodes, level=Level.TOP_MODULE))
+        ami_top[i, j] = ami(network1, network2, level=Level.TOP_MODULE)
 
-        ami_leaf[i, j] = adjusted_mutual_info_score(
-            *labels_pair(network1.nodes, network2.nodes, level=Level.LEAF_MODULE))
+        ami_leaf[i, j] = ami(network1, network2, level=Level.LEAF_MODULE)
 
         jaccard[i, j] = 1 - wjaccard(os.path.join("output/matched_ids", os.path.basename(network1.filename)),
                                      os.path.join("output/matched_ids", os.path.basename(network2.filename)))

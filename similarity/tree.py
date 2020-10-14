@@ -1,6 +1,5 @@
 import os
 import re
-from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
@@ -122,59 +121,6 @@ class Tree:
             nodes = filterfalse(node_filter, nodes)
 
         return cls(list(map(TreeNode.from_str, nodes)), **kwargs)
-
-
-def match_ids(ground_truth: Tree, trees: Iterable[Tree]):
-    state_ids = defaultdict(set)  # node id -> set of state other_state_ids
-    layer_ids = defaultdict(int)  # (node id, layer id) -> state id
-
-    for node in ground_truth.nodes:
-        state_ids[node.id].add(node.state_id)
-        layer_ids[node.id, node.layer_id] = node.state_id
-
-    state_ids = dict(state_ids)
-    layer_ids = dict(layer_ids)
-
-    for tree in trees:
-        if tree.is_multilayer:
-            multilayer_state_ids = set()
-
-            for node in tree.nodes:
-                node.state_id = layer_ids[node.id, node.layer_id]
-                multilayer_state_ids.add(node.state_id)
-
-            missing_nodes = (node for node in ground_truth.nodes
-                             if node.state_id not in multilayer_state_ids)
-
-            first_free_module_id = max(node.top_module for node in tree.nodes) + 1
-
-            tree.nodes.extend(TreeNode((first_free_module_id + i, 1),
-                                       0,
-                                       missing_node.name,
-                                       missing_node.id,
-                                       missing_node.state_id)
-                              for i, missing_node in enumerate(missing_nodes))
-
-        else:
-            missing_nodes = []
-
-            for node in tree.nodes:
-                # 1. set the state id of the already existing node
-                # 2. add nodes for each remaining state node
-                # 3. divide the flow evenly between them
-                other_state_ids = state_ids[node.id].copy()
-
-                node.flow /= len(other_state_ids)
-                node.state_id = other_state_ids.pop()
-
-                missing_nodes.extend(TreeNode(node.path,
-                                              node.flow,
-                                              node.name,
-                                              node.id,
-                                              other_state_id)
-                                     for other_state_id in other_state_ids)
-
-            tree.nodes.extend(missing_nodes)
 
 
 if __name__ == "__main__":
