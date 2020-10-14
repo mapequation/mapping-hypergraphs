@@ -150,9 +150,9 @@ def main(filenames: Sequence[str]):
         j = index[network1.pretty_filename]
         i = index[network2.pretty_filename]
 
-        ami_top[i, j] = ami(network1, network2, level=Level.TOP_MODULE)
+        ami_top[i, j] = ami(network1.nodes, network2.nodes, level=Level.TOP_MODULE)
 
-        ami_leaf[i, j] = ami(network1, network2, level=Level.LEAF_MODULE)
+        ami_leaf[i, j] = ami(network1.nodes, network2.nodes, level=Level.LEAF_MODULE)
 
         jaccard[i, j] = 1 - wjaccard(os.path.join("output/matched_ids", os.path.basename(network1.filename)),
                                      os.path.join("output/matched_ids", os.path.basename(network2.filename)))
