@@ -1,3 +1,5 @@
+import statistics
+from collections import defaultdict
 from os import path
 from typing import Callable, Optional
 
@@ -47,6 +49,21 @@ def run_infomap(basename: str,
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
 
 
+def nodes_dist(hypergraph):
+    _, hyperedges, _ = hypergraph
+    return [len(edge.nodes) for edge in hyperedges]
+
+
+def edges_dist(hypergraph):
+    _, hyperedges, _ = hypergraph
+    nodes = defaultdict(int)
+    for edge in hyperedges:
+        for node in edge.nodes:
+            nodes[node.id] += 1
+
+    return list(nodes.values())
+
+
 def run(file,
         outdir="output",
         outfile=None,
@@ -59,6 +76,11 @@ def run(file,
         write_network=False,
         **kwargs) -> Optional[Network]:
     hypergraph = parse(read(file.readlines()))
+
+    # average num authors in a paper?
+    print("[main]: avg num nodes per hyperedge:", statistics.mean(nodes_dist(hypergraph)))
+    # average papers per author?
+    print("[main]: avg num hyperedges per node:", statistics.mean(edges_dist(hypergraph)))
 
     if multilayer:
         network = representation.multilayer(hypergraph, self_links)

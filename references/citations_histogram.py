@@ -1,3 +1,4 @@
+import statistics
 from itertools import dropwhile
 from typing import Sequence
 
@@ -12,6 +13,10 @@ def citations_hist(lines: Sequence[str]):
     next(hyperedges)
 
     citations = tuple(int(line.split()[-1]) for line in hyperedges)
+
+    print("Mode:", statistics.mode(citations))
+    print("Mean:", statistics.mean(citations))
+    print("Median:", statistics.median(citations))
 
     plt.figure()
     sns.displot(citations, bins=30)
