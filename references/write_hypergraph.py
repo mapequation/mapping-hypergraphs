@@ -36,15 +36,21 @@ def omega_log_citations(_, *args) -> Weight:
     return math.log(get_citations(*args) + 1) + 1
 
 
-def gamma_unweighted(n: int) -> Tuple[Weight, ...]:
+def gamma_unweighted(n: int, **_) -> Tuple[Weight, ...]:
     return (1,) * n
 
 
-def gamma_weighted(n: int) -> Tuple[Weight, ...]:
-    if n == 1:
+def gamma_weighted(n: int, equal_contributions=False) -> Tuple[Weight, ...]:
+    if n > 1 and equal_contributions:
+        return (1,) * n
+    elif n == 1:
         return 2,
     else:
         return (2,) + (1,) * (n - 2) + (2,)
+
+
+def is_sorted(authors: Sequence[str]):
+    return sorted(authors) == authors
 
 
 def write_hypergraph(hypergraph,
@@ -53,6 +59,7 @@ def write_hypergraph(hypergraph,
                      gamma_function=gamma_unweighted):
     unique_nodes = {node for nodes in hypergraph for node in nodes.authors}
     nodes = {name: i + 1 for i, name in enumerate(sorted(unique_nodes))}
+    last_names = {i: name.split()[-1] for name, i in nodes.items()}
 
     outfile.write("*Vertices\n")
     outfile.writelines(vertex(node_id, name) for name, node_id in nodes.items())
@@ -70,7 +77,10 @@ def write_hypergraph(hypergraph,
     outfile.write("*Weights\n")
     outfile.writelines(weight(edge_id, node_id, gamma)
                        for edge_id, node_ids in edges.items()
-                       for node_id, gamma in zip(node_ids, gamma_function(len(node_ids))))
+                       for node_id, gamma in zip(node_ids,
+                                                 gamma_function(len(node_ids),
+                                                                equal_contributions=is_sorted(
+                                                                    [last_names[node_id] for node_id in node_ids]))))
 
 
 if __name__ == "__main__":
