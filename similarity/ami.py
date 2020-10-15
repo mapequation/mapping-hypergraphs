@@ -1,8 +1,12 @@
+from collections import defaultdict
+from itertools import combinations_with_replacement
 from typing import Sequence, Tuple, List
 
+import numpy as np
+import pandas as pd
 from sklearn.metrics import adjusted_mutual_info_score
 
-from similarity.tree import Level, TreeNode
+from similarity.tree import Level, TreeNode, Tree
 
 Labels = List[int]
 
@@ -28,5 +32,15 @@ def labels(nodes: Sequence[TreeNode], level: Level = Level.TOP_MODULE) -> Labels
     return [labels_[node_id] for node_id in sorted(labels_.keys())]
 
 
-def ami(*args, **kwargs) -> float:
-    return adjusted_mutual_info_score(*labels_pair(*args, **kwargs))
+def ami(networks: Sequence[Tree], **kwargs) -> pd.DataFrame:
+    ami_ = np.zeros(shape=(len(networks),) * 2)
+
+    index = defaultdict(lambda: len(index))
+
+    for network1, network2 in combinations_with_replacement(networks, 2):
+        j = index[network1.pretty_filename]
+        i = index[network2.pretty_filename]
+
+        ami_[i, j] = adjusted_mutual_info_score(*labels_pair(network1.nodes, network2.nodes, **kwargs))
+
+    return pd.DataFrame(data=ami_, columns=list(index.keys()))

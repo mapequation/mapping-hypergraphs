@@ -77,6 +77,23 @@ def is_feature_node(line: str) -> bool:
     return "hyperedge" in line.lower()
 
 
+def pretty_filename(filename: str) -> str:
+    basename = os.path.basename(filename)
+    name, _ = os.path.splitext(basename)
+    name = re.sub(r"_seed_\d+$", "", name)
+
+    representation, *kind = name.replace("_", " ").split()
+    kind = " ".join(kind)
+
+    if "backtracking" in kind:
+        kind = "non-bt"
+
+    if "directed" in kind:
+        kind = kind.replace("directed", "dir.")
+
+    return "{} ({})".format(representation, kind) if kind else representation
+
+
 @dataclass
 class Tree:
     nodes: List[TreeNode]
@@ -89,20 +106,7 @@ class Tree:
         if not self.filename:
             return str(self)
 
-        basename = os.path.basename(self.filename)
-        name, _ = os.path.splitext(basename)
-        name = re.sub(r"_seed_\d+$", "", name)
-
-        representation, *kind = name.replace("_", " ").split()
-        kind = " ".join(kind)
-
-        if "backtracking" in kind:
-            kind = "non-bt"
-
-        if "directed" in kind:
-            kind = kind.replace("directed", "dir.")
-
-        return "{} ({})".format(representation, kind) if kind else representation
+        return pretty_filename(self.filename)
 
     @classmethod
     def from_file(cls, filename: str, **kwargs):
