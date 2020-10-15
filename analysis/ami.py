@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_mutual_info_score
 
-from similarity.tree import Level, TreeNode, Tree
+from analysis.tree import Level, TreeNode, Tree
 
 Labels = List[int]
 

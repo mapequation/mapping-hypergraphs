@@ -3,8 +3,8 @@ from collections import defaultdict
 from itertools import takewhile, dropwhile
 from typing import Sequence
 
-from similarity import entropy
-from similarity.tree import Tree
+from analysis import entropy
+from analysis.tree import Tree
 
 
 def overlap(network: Tree):

@@ -6,7 +6,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from similarity.tree import pretty_filename
+from analysis.tree import pretty_filename
 
 
 def wjaccard(filename1: str, filename2: str, cmd: str = "wjaccarddist") -> float:

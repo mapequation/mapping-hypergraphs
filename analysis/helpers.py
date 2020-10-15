@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 from typing import Sequence, List, Iterable
 
-from similarity.tree import Tree, TreeNode
+from analysis.tree import Tree, TreeNode
 
 
 def read_filenames(filenames: Sequence[str]) -> List[Tree]:
