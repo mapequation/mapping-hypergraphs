@@ -1,6 +1,6 @@
 from collections import defaultdict
-from itertools import combinations_with_replacement
-from typing import Sequence, Tuple, List
+from itertools import combinations_with_replacement, starmap
+from typing import Sequence, List
 
 import numpy as np
 import pandas as pd
@@ -11,25 +11,9 @@ from analysis.tree import Level, TreeNode, Tree
 Labels = List[int]
 
 
-def labels_pair(nodes1: Sequence[TreeNode], nodes2: Sequence[TreeNode], **kwargs) -> Tuple[Labels, Labels]:
-    labels1, labels2 = labels(nodes1, **kwargs), labels(nodes2, **kwargs)
-
-    if len(labels1) != len(labels2):
-        raise RuntimeWarning("Different sets of labels")
-
-    return labels1, labels2
-
-
-def labels(nodes: Sequence[TreeNode], level: Level = Level.TOP_MODULE) -> Labels:
-    labels_ = {}
-
-    for node in nodes:
-        if level == Level.TOP_MODULE:
-            labels_[node.state_id] = node.top_module
-        else:
-            labels_[node.state_id] = node.module
-
-    return [labels_[node_id] for node_id in sorted(labels_.keys())]
+def module_level(nodes: Sequence[TreeNode], level: Level = Level.LEAF_MODULE) -> Labels:
+    return [node.level(level)
+            for node in sorted(nodes, key=lambda n: n.state_id)]
 
 
 def ami(networks: Sequence[Tree], **kwargs) -> pd.DataFrame:
@@ -41,6 +25,11 @@ def ami(networks: Sequence[Tree], **kwargs) -> pd.DataFrame:
         j = index[network1.pretty_filename]
         i = index[network2.pretty_filename]
 
-        ami_[i, j] = adjusted_mutual_info_score(*labels_pair(network1.nodes, network2.nodes, **kwargs))
+        labels1, labels2 = starmap(module_level, ((network1.nodes, kwargs), (network2.nodes, kwargs)))
+
+        if len(labels1) != len(labels2):
+            raise RuntimeWarning("Different sets of labels")
+
+        ami_[i, j] = adjusted_mutual_info_score(labels1, labels2)
 
     return pd.DataFrame(data=ami_, columns=list(index.keys()))

@@ -30,20 +30,18 @@ class TreeNode:
                                                self.id))
 
     @property
-    def rank(self) -> int:
-        return self.path[-1]
-
-    @property
     def top_module(self) -> int:
         return self.path[0]
 
     @property
-    def leaf_module(self) -> int:
-        return self.path[-2]
-
-    @property
     def module(self) -> str:
         return ":".join(map(str, self.path[:-1]))
+
+    def level(self, level: Level):
+        if level == Level.TOP_MODULE:
+            return self.top_module
+
+        return self.module
 
     @classmethod
     def from_str(cls, line: str):

@@ -20,7 +20,7 @@ def wjaccard(filename1: str, filename2: str, cmd: str = "wjaccarddist") -> float
     return float(result.stdout)
 
 
-def weighted_jaccard_dist(filenames: Sequence[str]) -> pd.DataFrame:
+def weighted_jaccard_dist(filenames: Sequence[str], **kwargs) -> pd.DataFrame:
     dist = np.zeros(shape=(len(filenames),) * 2)
 
     index = defaultdict(lambda: len(index))
@@ -29,7 +29,7 @@ def weighted_jaccard_dist(filenames: Sequence[str]) -> pd.DataFrame:
         j = index[pretty_filename(filename1)]
         i = index[pretty_filename(filename2)]
 
-        dist[i, j] = 1 - wjaccard(filename1, filename2)
+        dist[i, j] = 1 - wjaccard(filename1, filename2, **kwargs)
 
     return pd.DataFrame(data=dist, columns=list(index.keys()))
 
