@@ -1,5 +1,6 @@
 from collections import namedtuple
-from typing import Tuple, Sequence, Optional, List
+from dataclasses import dataclass
+from typing import Tuple, Optional, List
 
 Node = namedtuple("Node", "id, name")
 StateNode = namedtuple("StateNode", "state_id, node_id")
@@ -8,13 +9,10 @@ Link = Tuple[int, int, float]
 MultiLayerLink = Tuple[Tuple[int, int], Tuple[int, int], float]
 
 
+@dataclass
 class Network:
     nodes: List[Node]
     links: List[Link]
-
-    def __init__(self, nodes: Sequence[Node], links: Sequence[Link]):
-        self.nodes = list(nodes)
-        self.links = list(links)
 
     def write(self, filename):
         with open(filename, "w") as fp:
@@ -31,18 +29,10 @@ class Network:
                       for source, target, w in self.links)
 
 
+@dataclass
 class BipartiteNetwork(Network):
     features: List[Node]
     states: Optional[List[StateNode]] = None
-
-    def __init__(self, nodes: Sequence[Node],
-                 links: Sequence[Link],
-                 features: Sequence[Node],
-                 states: Optional[Sequence[StateNode]] = None):
-        super().__init__(nodes, links)
-        self.features = list(features)
-        if states:
-            self.states = list(states)
 
     @property
     def bipartite_start_id(self):
@@ -65,11 +55,9 @@ class BipartiteNetwork(Network):
                       for source, target, w in self.links)
 
 
+@dataclass
 class MultilayerNetwork(Network):
     links: List[MultiLayerLink]
-
-    def __init__(self, nodes: Sequence[Node], links: Sequence[MultiLayerLink]):
-        super().__init__(nodes, links)
 
     def _write_links(self, fp):
         fp.write("*Multilayer\n")

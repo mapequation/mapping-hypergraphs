@@ -4,8 +4,7 @@ from typing import Callable, Optional
 from infomap import Infomap
 
 from hypergraph import representation
-from hypergraph.io import read, parse
-from hypergraph.network import Network
+from hypergraph.network import HyperGraph, Network
 
 InfomapCallback = Callable[[Infomap], None]
 
@@ -58,7 +57,7 @@ def run(file,
         self_links=False,
         write_network=False,
         **kwargs) -> Optional[Network]:
-    hypergraph = parse(read(file.readlines()))
+    hypergraph = HyperGraph.from_iter(file.readlines())
 
     if multilayer:
         network = representation.multilayer(hypergraph, self_links)

@@ -1,9 +1,8 @@
 from collections import defaultdict
 from itertools import product
 
-from hypergraph.io import HyperGraph
+from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork
 from hypergraph.transition import p
-from hypergraph.network import StateNode, Node, BipartiteNetwork
 
 
 def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteNetwork:

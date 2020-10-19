@@ -1,9 +1,8 @@
 from collections import defaultdict
 from itertools import combinations_with_replacement, product
 
-from hypergraph.io import HyperGraph
+from hypergraph.network import HyperGraph, Network
 from hypergraph.transition import w, p
-from hypergraph.network import Network
 
 
 def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> Network:

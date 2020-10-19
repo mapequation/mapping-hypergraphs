@@ -1,8 +1,7 @@
 from itertools import product
 
-from hypergraph.io import HyperGraph
+from hypergraph.network import HyperGraph, MultilayerNetwork
 from hypergraph.transition import p
-from hypergraph.network import MultilayerNetwork
 
 
 def create_network(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
