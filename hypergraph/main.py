@@ -4,6 +4,7 @@ from typing import Callable, Optional
 from infomap import Infomap
 
 from hypergraph import representation
+from hypergraph.components import largest_connected_component
 from hypergraph.network import HyperGraph, Network
 
 InfomapCallback = Callable[[Infomap], None]
@@ -56,8 +57,12 @@ def run(file,
         directed_clique=False,
         self_links=False,
         write_network=False,
+        largest_cc=False,
         **kwargs) -> Optional[Network]:
     hypergraph = HyperGraph.from_iter(file.readlines())
+
+    if largest_cc:
+        hypergraph = largest_connected_component(hypergraph)
 
     if multilayer:
         network = representation.multilayer(hypergraph, self_links)
@@ -78,8 +83,7 @@ def run(file,
         def set_network(im: Infomap):
             im.set_names(network.nodes)
             im.set_names(network.features)
-            # FIXME Fixed in Infomap 1.2.0
-            im.bipartite_start_id = network.bipartite_start_id - 1
+            im.bipartite_start_id = network.bipartite_start_id
             if network.states:
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
@@ -136,6 +140,8 @@ def main():
     parser.add_argument("file", type=FileType("r"), default=sys.stdin, help="the hypergraph file")
     parser.add_argument("outdir", nargs="?", default="output", help="directory to write output to")
 
+    parser.add_argument("--largest-cc", action="store_true",
+                        help="only include largest connected component")
     parser.add_argument("-w", "--write-network", action="store_true", help="write network representation to file")
     parser.add_argument("-k", "--self-links", action="store_true",
                         help="include self links (does not apply to bipartite representations)")

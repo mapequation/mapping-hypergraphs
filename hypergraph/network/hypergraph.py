@@ -98,7 +98,7 @@ def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEd
     lines_ = (tuple(map(int, first)) + (float(omega),)
               for *first, omega in map(lambda line: line.split(), lines))
 
-    return [HyperEdge(edge_id, set(nodes[node_id] for node_id in node_ids), omega)
+    return [HyperEdge(edge_id, frozenset(nodes[node_id] for node_id in node_ids), omega)
             for edge_id, *node_ids, omega in lines_]
 
 

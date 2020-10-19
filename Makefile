@@ -26,13 +26,13 @@ references: INPUT := $(REFS)
 references:
 	@$(MAKE) clean
 	@$(MAKE) $(REFS)
-	@$(MAKE) all_representations FLAGS="$(ARGS)"
+	@$(MAKE) all_representations FLAGS="--largest-cc $(ARGS)"
 
 references_weighted: INPUT := $(REFS_WEIGHTED)
 references_weighted:
 	@$(MAKE) clean
 	@$(MAKE) $(REFS_WEIGHTED)
-	@$(MAKE) weighted_representations FLAGS="$(ARGS)"
+	@$(MAKE) weighted_representations FLAGS="--largest-cc $(ARGS)"
 
 
 # SEEDS
