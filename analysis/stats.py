@@ -4,7 +4,7 @@ from itertools import takewhile, dropwhile
 from typing import Sequence
 
 from analysis import entropy
-from analysis.tree import Tree
+from hypergraph.network import Tree
 
 
 def overlap(network: Tree):

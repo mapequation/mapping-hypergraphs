@@ -6,7 +6,7 @@ from typing import Sequence, Dict, Tuple, Any, Iterable
 import numpy as np
 import pandas as pd
 
-from analysis.tree import TreeNode, Tree
+from hypergraph.network import TreeNode, Tree
 
 
 def assignment_id(path: Tuple[int]) -> Iterable[int]:
