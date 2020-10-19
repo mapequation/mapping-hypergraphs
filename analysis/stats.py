@@ -3,29 +3,9 @@ from collections import defaultdict
 from itertools import takewhile, dropwhile
 from typing import Sequence
 
-from analysis import entropy
+from scipy.stats import entropy
+
 from hypergraph.network import Tree
-
-
-def overlap(network: Tree):
-    module_assignments = defaultdict(lambda: defaultdict(int))
-
-    for node in network.nodes:
-        module_assignments[node.id][node.module] += 1
-
-    overlaps = {}
-
-    for node_id, assignments in module_assignments.items():
-        num_assignments = len(assignments.keys())
-        tot_assignments = sum(assignments.values())
-
-        if tot_assignments == 1:
-            overlaps[node_id] = 0
-            continue
-
-        overlaps[node_id] = (num_assignments - 1) / (tot_assignments - 1)
-
-    return overlaps
 
 
 def module_assignments(network: Tree):
@@ -47,8 +27,10 @@ def perplexity(network: Tree):
 
     perplexity_ = {}
 
-    for node_id, a in assignments.items():
-        perplexity_[node_id] = entropy.perplexity(a.values())
+    for node_id, node_assignments in assignments.items():
+        a = [node_assignments[module_id] for module_id in sorted(node_assignments)]
+
+        perplexity_[node_id] = 2 ** entropy(a, base=2)
 
     return perplexity_
 
