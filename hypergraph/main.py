@@ -51,6 +51,7 @@ def run(file,
         outdir="output",
         outfile=None,
         multilayer=False,
+        multilayer_similarity=False,
         bipartite=False,
         bipartite_non_backtracking=False,
         clique_graph=False,
@@ -64,10 +65,11 @@ def run(file,
     if largest_cc:
         hypergraph = largest_connected_component(hypergraph)
 
-    if multilayer:
-        network = representation.multilayer(hypergraph, self_links)
+    if multilayer or multilayer_similarity:
+        network = representation.multilayer(hypergraph, multilayer_similarity, self_links=self_links)
 
         basename = outfile if outfile else "multilayer"
+        basename += "_similarity" if multilayer_similarity else ""
         basename += "_self_links" if self_links else ""
 
         def set_network(im: Infomap):
@@ -156,6 +158,7 @@ def main():
     output = parser.add_argument_group("representation")
     options = output.add_mutually_exclusive_group(required=True)
     options.add_argument("-m", "--multilayer", action="store_true")
+    options.add_argument("-M", "--multilayer-similarity", action="store_true")
     options.add_argument("-b", "--bipartite", action="store_true")
     options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
     options.add_argument("-c", "--clique-graph", action="store_true")
