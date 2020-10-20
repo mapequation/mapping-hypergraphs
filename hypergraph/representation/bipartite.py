@@ -3,7 +3,7 @@ from itertools import product
 from operator import attrgetter
 
 from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork
-from hypergraph.transition import p
+from hypergraph.transition import gamma, delta, d
 
 
 def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteNetwork:
@@ -11,7 +11,9 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
 
     print("[bipartite] creating bipartite...")
 
-    p_ = p(edges, weights)
+    gamma_ = gamma(weights)
+    delta_ = delta(weights)
+    d_ = d(edges)
 
     bipartite_start_id = max(map(attrgetter("id"), nodes)) + 1
 
@@ -33,9 +35,13 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
                 if u.id == v.id:
                     continue
 
-                weight = p_(e1, u, e2, v, self_links=False)
+                if u not in e2.nodes:
+                    continue
 
-                if weight < 1e-10:
+                hyperedge_weight = e2.omega / d_(u)
+                feature_weight = gamma_(e2, v) / (delta_(e2) - gamma_(e2, u))
+
+                if hyperedge_weight * feature_weight < 1e-10:
                     continue
 
                 source_id = get_state_id[u.id]
@@ -48,8 +54,8 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
                 if create_feature_state:
                     states.append(StateNode(feature_state_id, feature_id))
 
-                links[source_id, feature_state_id] += weight
-                links[feature_state_id, target_id] += weight
+                links[source_id, feature_state_id] += hyperedge_weight
+                links[feature_state_id, target_id] += feature_weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
@@ -59,17 +65,21 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
     else:
         for e1, e2 in product(edges, edges):
             for u, v in product(e1.nodes, e2.nodes):
-                weight = p_(e1, u, e2, v, self_links=True)
+                if u not in e2.nodes:
+                    continue
 
-                if weight < 1e-10:
+                hyperedge_weight = e2.omega / d_(u)
+                feature_weight = gamma_(e2, v) / delta_(e2)
+
+                if hyperedge_weight * feature_weight < 1e-10:
                     continue
 
                 source_id = u.id
                 target_id = v.id
                 feature_id = edge_to_feature_id[e2.id]
 
-                links[source_id, feature_id] += weight
-                links[feature_id, target_id] += weight
+                links[source_id, feature_id] += hyperedge_weight
+                links[feature_id, target_id] += feature_weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
