@@ -1,4 +1,3 @@
-import glob
 import os
 from collections import defaultdict
 from operator import attrgetter
@@ -17,11 +16,6 @@ def write_networks(networks: Sequence[Tree], outdir: str):
         with open(os.path.join(outdir, os.path.basename(network.filename)), "w") as fp:
             for node in network.nodes:
                 node.write(fp)
-
-
-def remove_files(directory: str):
-    for f in glob.glob(directory + "/*"):
-        os.remove(f)
 
 
 def list_files(directory: str = "output") -> List[str]:

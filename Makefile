@@ -118,4 +118,4 @@ multilayer_similarity_self_links:
 .PHONY: clean
 
 clean:
-	$(RM) -r $(OUTDIR)/*.{ftree,net}
+	$(RM) -r $(OUTDIR)/**/*.{ftree,net}
