@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import combinations_with_replacement, starmap
+from operator import attrgetter
 from typing import Sequence, List
 
 import numpy as np
@@ -13,7 +14,7 @@ Labels = List[int]
 
 def module_level(nodes: Sequence[TreeNode], level: Level = Level.LEAF_MODULE) -> Labels:
     return [node.level(level)
-            for node in sorted(nodes, key=lambda n: n.state_id)]
+            for node in sorted(nodes, key=attrgetter("state_id"))]
 
 
 def ami(networks: Sequence[Tree], **kwargs) -> pd.DataFrame:

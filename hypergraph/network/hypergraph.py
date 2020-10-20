@@ -1,6 +1,7 @@
 import re
 from collections import namedtuple
 from dataclasses import dataclass
+from operator import methodcaller
 from typing import Iterable, List, Tuple, Sequence, Mapping, Dict
 
 from .network import Node
@@ -96,7 +97,7 @@ def parse_nodes(lines: Sequence[str]) -> Dict[int, Node]:
 
 def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEdge]:
     lines_ = (tuple(map(int, first)) + (float(omega),)
-              for *first, omega in map(lambda line: line.split(), lines))
+              for *first, omega in map(methodcaller("split"), lines))
 
     return [HyperEdge(edge_id, frozenset(nodes[node_id] for node_id in node_ids), omega)
             for edge_id, *node_ids, omega in lines_]
@@ -104,7 +105,7 @@ def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEd
 
 def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma]:
     lines_ = (tuple(map(int, first)) + (float(gamma),)
-              for *first, gamma in map(lambda line: line.split(), lines))
+              for *first, gamma in map(methodcaller("split"), lines))
 
     return [Gamma(edge, nodes[node_id], gamma)
             for edge, node_id, gamma in lines_]

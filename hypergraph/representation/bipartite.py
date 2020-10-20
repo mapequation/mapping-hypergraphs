@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import product
+from operator import attrgetter
 
 from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork
 from hypergraph.transition import p
@@ -12,7 +13,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
 
     p_ = p(edges, weights)
 
-    bipartite_start_id = max(node.id for node in nodes) + 1
+    bipartite_start_id = max(map(attrgetter("id"), nodes)) + 1
 
     features = [Node(bipartite_start_id + i, "Hyperedge {}".format(i + 1))
                 for i in range(len(edges))]

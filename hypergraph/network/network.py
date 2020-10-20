@@ -1,5 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
+from operator import attrgetter
 from typing import Tuple, Optional, List
 
 Node = namedtuple("Node", "id, name")
@@ -35,8 +36,8 @@ class BipartiteNetwork(Network):
     states: Optional[List[StateNode]] = None
 
     @property
-    def bipartite_start_id(self):
-        return min(node.id for node in self.features)
+    def bipartite_start_id(self) -> int:
+        return min(map(attrgetter("id"), self.features))
 
     def _write_nodes(self, fp):
         super()._write_nodes(fp)

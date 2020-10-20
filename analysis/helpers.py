@@ -1,6 +1,7 @@
 import glob
 import os
 from collections import defaultdict
+from operator import attrgetter
 from typing import Sequence, List, Iterable
 
 from hypergraph.network import Tree, TreeNode
@@ -54,7 +55,7 @@ def match_ids(ground_truth_filename: str, networks: Iterable[Tree]):
             missing_nodes = (node for node in ground_truth.nodes
                              if node.state_id not in multilayer_state_ids)
 
-            first_free_module_id = max(node.top_module for node in network.nodes) + 1
+            first_free_module_id = max(map(attrgetter("top_module"), network.nodes)) + 1
 
             network.nodes.extend(TreeNode((first_free_module_id + i, 1),
                                           0,
