@@ -29,7 +29,7 @@ def omega_weighted(node_ids: Tuple[int, ...], *_) -> Weight:
 
 
 def omega_citations(_, *args) -> Weight:
-    return get_citations(*args)
+    return get_citations(*args) + 1
 
 
 def omega_log_citations(_, *args) -> Weight:
