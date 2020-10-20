@@ -3,6 +3,7 @@ from collections import defaultdict
 from itertools import takewhile, dropwhile
 from typing import Sequence
 
+import pandas as pd
 from scipy.stats import entropy
 
 from hypergraph.network import Tree
@@ -35,34 +36,41 @@ def perplexity(network: Tree):
     return perplexity_
 
 
-def summarize(networks: Sequence[Tree]):
-    summary = []
+def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
+    summary = defaultdict(list)
 
     for network in networks:
         name = network.filename
 
         with open(name) as fp:
             lines = fp.readlines()
-            header = takewhile(lambda line: line.startswith("#"), lines)
-            # partitioned into 4 levels with 286 top modules
-            levels = int(next(filter(lambda line: line.startswith("# partitioned into"), header)).split()[3])
-            # codelength 3.11764 bits
-            codelength = float(next(filter(lambda line: line.startswith("# codelength"), header)).split()[2])
 
-            states_filename = os.path.splitext(name)[0] + "_states.net"
+        header = takewhile(lambda line: line.startswith("#"), lines)
+        # partitioned into 4 levels with 286 top modules
+        line = next(filter(lambda line: line.startswith("# partitioned into"), header)).split()
+        levels = int(line[3])
+        top_modules = int(line[6])
 
-            with open(states_filename) as states_fp:
-                states_lines = states_fp.readlines()
+        # codelength 3.11764 bits
+        line = next(filter(lambda line: line.startswith("# codelength"), header)).split()
+        codelength = float(line[2])
 
-                num_states = len(list(takewhile(lambda line: not line.startswith("*Links"),
-                                                dropwhile(lambda line: not line.startswith("# stateId physicalId"),
-                                                          states_lines))))
+        states_filename = os.path.splitext(name)[0] + "_states.net"
 
-                num_links = len(list(dropwhile(lambda line: not line.startswith("*Links"), states_lines)))
+        with open(states_filename) as states_fp:
+            states_lines = states_fp.readlines()
 
-                summary.append((network.pretty_filename, num_states, num_links, levels, codelength))
+        num_states = len(list(takewhile(lambda line: not line.startswith("*Links"),
+                                        dropwhile(lambda line: not line.startswith("# stateId physicalId"),
+                                                  states_lines))))
 
-    for line in summary:
-        print("{:26} {} {:5} {} {:.3f}".format(*line))
+        num_links = len(list(dropwhile(lambda line: not line.startswith("*Links"), states_lines)))
 
-    return summary
+        summary["network"].append(network.pretty_filename)
+        summary["num states"].append(num_states)
+        summary["num links"].append(num_links)
+        summary["levels"].append(levels)
+        summary["top modules"].append(top_modules)
+        summary["codelength"].append(codelength)
+
+    return pd.DataFrame(data=summary)
