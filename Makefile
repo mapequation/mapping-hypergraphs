@@ -71,7 +71,8 @@ all_representations: \
 	clique_directed_self_links \
 	multilayer \
 	multilayer_self_links \
-	multilayer_similarity
+	multilayer_similarity \
+	multilayer_similarity_self_links
 
 weighted_representations: \
 	bipartite \
@@ -80,7 +81,8 @@ weighted_representations: \
 	clique_directed_self_links \
 	multilayer \
 	multilayer_self_links \
-	multilayer_similarity
+	multilayer_similarity \
+	multilayer_similarity_self_links
 
 bipartite:
 	$(RUN) -b $(FLAGS)
@@ -108,6 +110,9 @@ multilayer_self_links:
 
 multilayer_similarity:
 	$(RUN) -M $(FLAGS)
+
+multilayer_similarity_self_links:
+	$(RUN) -Mk $(FLAGS)
 
 # CLEAN
 .PHONY: clean

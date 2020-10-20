@@ -1,9 +1,8 @@
-from collections import defaultdict
-from itertools import product, permutations
+from itertools import product
 from typing import Set, Any
 
 from hypergraph.network import HyperGraph, MultilayerNetwork
-from hypergraph.transition import p, gamma, delta
+from hypergraph.transition import p, gamma, delta, E
 
 
 def create_random_walk(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
@@ -38,19 +37,14 @@ def jaccard_index(set1: Set[Any], set2: Set[Any]) -> float:
 def create_similarity_walk(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
     nodes, edges, weights = hypergraph
 
-    j_alpha = defaultdict(float)
-
-    for edge1, edge2 in permutations(edges, 2):
-        j_alpha[edge1.id] += jaccard_index(edge1.nodes, edge2.nodes)
-
     gamma_ = gamma(weights)
     delta_ = delta(weights)
+    E_ = E(edges)
+    edges_ = {edge.id: edge for edge in edges}
 
     links = []
 
     for e1, e2 in product(edges, edges):
-        j = jaccard_index(e1.nodes, e2.nodes) / j_alpha[e1.id]
-
         for u, v in product(e1.nodes, e2.nodes):
             if not self_links and u.id == v.id:
                 continue
@@ -58,7 +52,14 @@ def create_similarity_walk(hypergraph: HyperGraph, self_links: bool) -> Multilay
             if u not in e2.nodes:
                 continue
 
-            weight = j * gamma_(e2, v) / delta_(e2)
+            E_u = {edges_[edge] for edge in E_(u)}
+
+            j_alpha = sum(jaccard_index(e1.nodes, beta.nodes) for beta in E_u)
+            j_alpha_beta = jaccard_index(e1.nodes, e2.nodes)
+
+            delta_e = delta_(e2) if self_links else delta_(e2) - gamma_(e2, u)
+
+            weight = j_alpha_beta / j_alpha * gamma_(e2, v) / delta_e
 
             if weight < 1e-10:
                 continue
