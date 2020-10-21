@@ -29,7 +29,7 @@ def run_infomap(basename: str,
 
     filename = basename + ("_seed_{}".format(seed) if seed != _DEFAULT_SEED else "")
 
-    default_args = "--num-trials 10 --silent -o states"
+    default_args = "--num-trials 20 --silent -o states"
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
@@ -45,6 +45,21 @@ def run_infomap(basename: str,
     im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
     print("[infomap] codelength {}".format(im.codelength))
     print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
+
+
+def remove_simple_hyperedges(hypergraph: HyperGraph) -> HyperGraph:
+    nodes, edges, weights = hypergraph
+
+    edges_ = [edge for edge in edges if len(edge.nodes) > 1]
+    nodes_ = set()
+    weights_ = []
+
+    for edge in edges_:
+        nodes_.update(edge.nodes)
+        weights_.extend(weight for weight in weights
+                        if weight.edge == edge.id)
+
+    return HyperGraph(list(nodes_), edges_, weights_)
 
 
 def run(file,
@@ -64,6 +79,8 @@ def run(file,
 
     if largest_cc:
         hypergraph = largest_connected_component(hypergraph)
+
+    hypergraph = remove_simple_hyperedges(hypergraph)
 
     if multilayer or multilayer_similarity:
         network = representation.multilayer(hypergraph, multilayer_similarity, self_links=self_links)
