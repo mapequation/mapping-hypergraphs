@@ -1,10 +1,10 @@
 from collections import defaultdict
-from typing import Iterable, Set, Optional
+from typing import Iterable, Set, Optional, Callable
 
 from hypergraph.network import Node, HyperEdge, Gamma
 
 
-def E(edges: Iterable[HyperEdge]):
+def E(edges: Iterable[HyperEdge]) -> Callable[[Node, Optional[Node]], Set[int]]:
     """
     Set of hyperedges incident to vertex v.
 
@@ -31,7 +31,7 @@ def E(edges: Iterable[HyperEdge]):
     return inner
 
 
-def d(edges: Iterable[HyperEdge]):
+def d(edges: Iterable[HyperEdge]) -> Callable[[Node], float]:
     """
     Degree of vertex v.
 
@@ -46,7 +46,7 @@ def d(edges: Iterable[HyperEdge]):
     return inner
 
 
-def delta(weights: Iterable[Gamma]):
+def delta(weights: Iterable[Gamma]) -> Callable[[HyperEdge], float]:
     """
     Degree of hyperedge e.
 
@@ -65,7 +65,7 @@ def delta(weights: Iterable[Gamma]):
     return inner
 
 
-def gamma(weights: Iterable[Gamma]):
+def gamma(weights: Iterable[Gamma]) -> Callable[[HyperEdge, Node], float]:
     """
     Edge-(in)dependent vertex weight.
 
@@ -80,7 +80,8 @@ def gamma(weights: Iterable[Gamma]):
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
+def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) \
+        -> Callable[[HyperEdge, Node, HyperEdge, Node, bool], float]:
     """
     Transition probability to go from vertex u in edge e1 to vertex v in vertex e2.
 
@@ -104,7 +105,7 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     return inner
 
 
-def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
+def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) -> Callable[[Node, Node, bool], float]:
     """
     Weight for going between vertex u to v in a clique graph representation
     of a hypergraph with edge-independent vertex weights.
