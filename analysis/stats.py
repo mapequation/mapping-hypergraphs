@@ -9,31 +9,32 @@ from scipy.stats import entropy
 from hypergraph.network import Tree
 
 
-def module_assignments(network: Tree):
-    assignments = defaultdict(set)
+def assignments(network: Tree) -> pd.DataFrame:
+    assignments_ = defaultdict(set)
 
     for node in network.nodes:
-        assignments[node.id].add(node.module)
+        assignments_[node.id].add(node.module)
 
-    return {node_id: len(modules) for node_id, modules in assignments.items()}
+    assignments_ = {node_id: len(modules)
+                    for node_id, modules in assignments_.items()}
+
+    return pd.DataFrame(data={network.pretty_filename: sorted(assignments_.values(), reverse=True)})
 
 
-def perplexity(network: Tree):
-    assignments = defaultdict(lambda: defaultdict(int))
-    flow = defaultdict(lambda: defaultdict(float))
+def perplexity(x) -> float:
+    return 2 ** entropy(x, base=2)
+
+
+def effective_assignments(network: Tree) -> pd.DataFrame:
+    assignments_ = defaultdict(lambda: defaultdict(int))
 
     for node in network.nodes:
-        assignments[node.id][node.module] += 1
-        flow[node.id][node.module] += node.flow
+        assignments_[node.id][node.module] += 1
 
-    perplexity_ = {}
+    perplexity_ = {node_id: perplexity(list(node_assignments.values()))
+                   for node_id, node_assignments in assignments_.items()}
 
-    for node_id, node_assignments in assignments.items():
-        a = [node_assignments[module_id] for module_id in sorted(node_assignments)]
-
-        perplexity_[node_id] = 2 ** entropy(a, base=2)
-
-    return perplexity_
+    return pd.DataFrame(data={network.pretty_filename: sorted(perplexity_.values(), reverse=True)})
 
 
 def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
