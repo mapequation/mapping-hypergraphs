@@ -9,6 +9,13 @@ example: INPUT := $(DATA)/example.txt
 example: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example: clean all_representations
 
+# TWO MODULES
+.PHONY: two_modules
+
+two_modules: INPUT := $(DATA)/two-modules.txt
+two_modules: FLAGS := -w --teleportation-probability 0 $(ARGS)
+two_modules: clean all_representations
+
 # REFERENCES
 .PHONY: references references_weighted
 
@@ -118,4 +125,5 @@ multilayer_similarity_self_links:
 .PHONY: clean
 
 clean:
+	$(RM) -r $(OUTDIR)/*.{ftree,net}
 	$(RM) -r $(OUTDIR)/**/*.{ftree,net}
