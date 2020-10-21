@@ -13,7 +13,9 @@ def read_filenames(filenames: Sequence[str]) -> List[Tree]:
 
 def write_networks(networks: Sequence[Tree], outdir: str):
     for network in networks:
-        with open(os.path.join(outdir, os.path.basename(network.filename)), "w") as fp:
+        basename = os.path.splitext(os.path.basename(network.filename))[0]
+        filename = os.path.join(outdir, f"{basename}.tree")
+        with open(filename, "w") as fp:
             for node in network.nodes:
                 node.write(fp)
 
