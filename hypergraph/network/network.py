@@ -15,6 +15,10 @@ class Network:
     nodes: List[Node]
     links: List[Link]
 
+    def apply(self, infomap):
+        infomap.add_nodes(self.nodes)
+        infomap.add_links(self.links)
+
     def write(self, fp: TextIO):
         self._write_nodes(fp)
         self._write_links(fp)
@@ -33,6 +37,11 @@ class Network:
 class StateNetwork(Network):
     states: List[StateNode]
 
+    def apply(self, infomap):
+        infomap.set_names(self.nodes)
+        infomap.add_state_nodes(self.states)
+        infomap.add_links(self.links)
+
     def write(self, fp: TextIO):
         self._write_nodes(fp)
         self._write_states(fp)
@@ -47,6 +56,11 @@ class StateNetwork(Network):
 @dataclass
 class BipartiteNetwork(Network):
     features: List[Node]
+
+    def apply(self, infomap):
+        super().apply(infomap)
+        infomap.add_nodes(self.features)
+        infomap.bipartite_start_id = self.bipartite_start_id
 
     @property
     def bipartite_start_id(self) -> int:
@@ -65,12 +79,21 @@ class BipartiteNetwork(Network):
 
 @dataclass
 class BipartiteStateNetwork(BipartiteNetwork, StateNetwork):
-    pass
+    def apply(self, infomap):
+        infomap.set_names(self.nodes)
+        infomap.set_names(self.features)
+        infomap.add_state_nodes(self.states)
+        infomap.add_links(self.links)
+        infomap.bipartite_start_id = self.bipartite_start_id
 
 
 @dataclass
 class MultilayerNetwork(Network):
     links: List[MultiLayerLink]
+
+    def apply(self, infomap):
+        infomap.set_names(self.nodes)
+        infomap.add_multilayer_links(self.links)
 
     def _write_links(self, fp: TextIO):
         fp.write("*Multilayer\n")

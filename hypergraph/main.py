@@ -1,5 +1,5 @@
 from os import path
-from typing import Callable, Optional
+from typing import Optional
 
 from infomap import Infomap
 
@@ -7,15 +7,13 @@ from hypergraph import representation
 from hypergraph.components import largest_connected_component
 from hypergraph.network import HyperGraph, Network
 
-InfomapCallback = Callable[[Infomap], None]
-
 _DEFAULT_SEED = 123
 _DEFAULT_TELEPORTATION_PROB = 0.15
 
 
 def run_infomap(basename: str,
                 outdir: str,
-                callback: InfomapCallback,
+                network: Network,
                 args: Optional[str] = None,
                 directed: bool = True,
                 self_links: bool = False,
@@ -40,7 +38,7 @@ def run_infomap(basename: str,
 
     print("[infomap] running infomap...")
     im = Infomap("{} {}".format(default_args, args if args else ""))
-    callback(im)
+    network.apply(im)
     im.run()
     im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
     print("[infomap] codelength {}".format(im.codelength))
@@ -89,23 +87,11 @@ def run(file,
         basename += "_similarity" if multilayer_similarity else ""
         basename += "_self_links" if self_links else ""
 
-        def set_network(im: Infomap):
-            im.set_names(network.nodes)
-            im.add_multilayer_links(network.links)
-
     elif bipartite or bipartite_non_backtracking:
         network = representation.bipartite(hypergraph, bipartite_non_backtracking)
 
         basename = outfile if outfile else "bipartite"
         basename += "_non_backtracking" if bipartite_non_backtracking else ""
-
-        def set_network(im: Infomap):
-            im.set_names(network.nodes)
-            im.set_names(network.features)
-            im.bipartite_start_id = network.bipartite_start_id
-            if bipartite_non_backtracking:
-                im.add_state_nodes(network.states)
-            im.add_links(network.links)
 
     elif unipartite_undirected or unipartite_directed:
         network = representation.unipartite(hypergraph, unipartite_directed, self_links)
@@ -113,10 +99,6 @@ def run(file,
         basename = outfile if outfile else "unipartite"
         basename += "_directed" if unipartite_directed else "_undirected"
         basename += "_self_links" if self_links else ""
-
-        def set_network(im: Infomap):
-            im.add_nodes(network.nodes)
-            im.add_links(network.links)
 
     else:
         return
@@ -128,7 +110,7 @@ def run(file,
 
     run_infomap(basename,
                 outdir,
-                set_network,
+                network,
                 directed=not unipartite_undirected,
                 self_links=self_links,
                 **kwargs)
