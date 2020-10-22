@@ -90,7 +90,7 @@ def pretty_filename(filename: str) -> str:
     if "backtracking" in kind:
         kind = "non-bt"
 
-    return "{} ({})".format(representation, kind) if kind else representation
+    return f"{representation} ({kind})" if kind else representation
 
 
 @dataclass

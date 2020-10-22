@@ -7,16 +7,16 @@ Weight = Union[int, float]
 
 
 def vertex(node_id: int, name: str) -> str:
-    return "{} \"{}\"\n".format(node_id, name)
+    return f"{node_id} \"{name}\"\n"
 
 
 def hyperedge(edge_id: str, node_ids: Sequence[int], omega: Weight) -> str:
     ids = " ".join(map(str, node_ids))
-    return "{} {} {}\n".format(edge_id, ids, omega)
+    return f"{edge_id} {ids} {omega}\n"
 
 
 def weight(edge_id: int, node_id: int, gamma: Weight) -> str:
-    return "{} {} {}\n".format(edge_id, node_id, gamma)
+    return f"{edge_id} {node_id} {gamma}\n"
 
 
 def omega_unweighted(*_) -> Weight:

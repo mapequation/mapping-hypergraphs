@@ -18,7 +18,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
 
     bipartite_start_id = max(map(attrgetter("id"), nodes)) + 1
 
-    features = [Node(bipartite_start_id + i, "Hyperedge {}".format(i + 1))
+    features = [Node(bipartite_start_id + i, f"Hyperedge {i + 1}")
                 for i in range(len(edges))]
 
     edge_to_feature_id = {edge.id: bipartite_start_id + i

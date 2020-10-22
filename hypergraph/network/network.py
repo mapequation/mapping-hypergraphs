@@ -25,11 +25,11 @@ class Network:
 
     def _write_nodes(self, fp: TextIO):
         fp.write("*Vertices\n")
-        fp.writelines("{} \"{}\"\n".format(node.id, node.name) for node in self.nodes)
+        fp.writelines(f"{node.id} \"{node.name}\"\n" for node in self.nodes)
 
     def _write_links(self, fp: TextIO):
         fp.write("*Edges\n")
-        fp.writelines("{} {} {}\n".format(source, target, w)
+        fp.writelines(f"{source} {target} {w}\n"
                       for source, target, w in self.links)
 
 
@@ -49,7 +49,7 @@ class StateNetwork(Network):
 
     def _write_states(self, fp: TextIO):
         fp.write("*States\n")
-        fp.writelines("{} {}\n".format(state.state_id, state.node_id)
+        fp.writelines(f"{state.state_id} {state.node_id}\n"
                       for state in self.states)
 
 
@@ -68,12 +68,12 @@ class BipartiteNetwork(Network):
 
     def _write_nodes(self, fp: TextIO):
         super()._write_nodes(fp)
-        fp.writelines("{} \"{}\"\n".format(node.id, node.name)
+        fp.writelines(f"{node.id} \"{node.name}\"\n"
                       for node in self.features)
 
     def _write_links(self, fp: TextIO):
-        fp.write("*Bipartite {}\n".format(self.bipartite_start_id))
-        fp.writelines("{} {} {}\n".format(source, target, w)
+        fp.write(f"*Bipartite {self.bipartite_start_id}\n")
+        fp.writelines(f"{source} {target} {w}\n"
                       for source, target, w in self.links)
 
 
@@ -97,7 +97,7 @@ class MultilayerNetwork(Network):
 
     def _write_links(self, fp: TextIO):
         fp.write("*Multilayer\n")
-        fp.writelines("{} {} {} {} {}\n".format(e1, u, e2, v, w)
+        fp.writelines(f"{e1} {u} {e2} {v} {w}\n"
                       for (e1, u), (e2, v), w in self.links)
 
 

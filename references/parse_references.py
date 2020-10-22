@@ -142,7 +142,7 @@ def parse(texfile, verbose=False):
                             and name.endswith(" " + last_name):
                         author_list[i] = complete_name
                         if verbose:
-                            print("{} -> {}".format(name, complete_name))
+                            print(f"{name} -> {complete_name}")
                         break
 
             references.append(Article(tuple(author_list), title))
@@ -154,7 +154,7 @@ def parse(texfile, verbose=False):
 
     if verbose:
         print("-----------------------------")
-    print("Parsed {}/{} references".format(len(references), len(refs)))
-    print("Authors: {}".format(len(unique_authors)))
+    print(f"Parsed {len(references)}/{len(refs)} references")
+    print(f"Authors: {len(unique_authors)}")
 
     return references

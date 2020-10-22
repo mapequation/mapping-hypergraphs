@@ -25,24 +25,24 @@ def run_infomap(basename: str,
     if no_infomap:
         return
 
-    filename = basename + ("_seed_{}".format(seed) if seed != _DEFAULT_SEED else "")
+    filename = basename + (f"_seed_{seed}" if seed != _DEFAULT_SEED else "")
 
-    default_args = "--num-trials 20 --silent -o states"
+    default_args = " --num-trials 20 --silent -o states"
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
-    default_args += " --seed {}".format(seed)
-    default_args += " --teleportation-probability {}".format(teleportation_probability)
-    default_args += " --out-name {} ".format(filename)
+    default_args += f" --seed {seed}"
+    default_args += f" --teleportation-probability {teleportation_probability}"
+    default_args += f" --out-name {filename} "
     default_args += outdir
 
     print("[infomap] running infomap...")
-    im = Infomap("{} {}".format(default_args, args if args else ""))
+    im = Infomap(args if args else '' + default_args)
     network.apply(im)
     im.run()
     im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
-    print("[infomap] codelength {}".format(im.codelength))
-    print("[infomap] num top modules {}".format(im.num_non_trivial_top_modules))
+    print(f"[infomap] codelength {im.codelength}")
+    print(f"[infomap] num top modules {im.num_top_modules}")
 
 
 def remove_simple_hyperedges(hypergraph: HyperGraph) -> HyperGraph:

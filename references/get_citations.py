@@ -11,11 +11,11 @@ scholarly.use_proxy(pg)
 
 
 def get_google_scholar_citations(title: str, first_author: str) -> int:
-    print("{}: {} -> ".format(first_author, title), end="")
+    print(f"{first_author}: {title} -> ", end="")
 
     *_, last_name = first_author.split()
 
-    query = "{} {}".format(title.rstrip("."), last_name)
+    query = f"{title.rstrip('.')} {last_name}"
 
     try:
         results = scholarly.search_pubs(query, patents=False)
@@ -29,7 +29,7 @@ def get_google_scholar_citations(title: str, first_author: str) -> int:
             .decode("ascii")
 
         if last_name.lower() in found_author.lower():
-            print("{}: {}".format(result.bib["title"], result.bib["author"][0]))
+            print(f"{result.bib['title']}: {result.bib['author'][0]}")
             return int(result.bib["cites"])
 
     print("no match")
