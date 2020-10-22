@@ -20,11 +20,6 @@ def write_networks(networks: Sequence[Tree], outdir: str):
                 node.write(fp)
 
 
-def list_files(directory: str = "output") -> List[str]:
-    names = (os.path.join(directory, name) for name in sorted(os.listdir(directory)))
-    return [name for name in names if os.path.isfile(name) and name.endswith("tree")]
-
-
 def match_ids(ground_truth_filename: str, networks: Iterable[Tree]):
     ground_truth = next((network for network in networks if ground_truth_filename in network.filename))
 
