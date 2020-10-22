@@ -1,12 +1,13 @@
 from collections import defaultdict
 from itertools import product
 from operator import attrgetter
+from typing import Union
 
-from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork
+from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork, BipartiteStateNetwork
 from hypergraph.transition import gamma, delta, d
 
 
-def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteNetwork:
+def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[BipartiteNetwork, BipartiteStateNetwork]:
     nodes, edges, weights = hypergraph
 
     print("[bipartite] creating bipartite...")
@@ -60,7 +61,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> BipartiteN
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
 
-        return BipartiteNetwork(nodes, links, features, states)
+        return BipartiteStateNetwork(nodes, links, states, features)
 
     else:
         for e1, e2 in product(edges, edges):

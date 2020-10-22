@@ -103,7 +103,7 @@ def run(file,
             im.set_names(network.nodes)
             im.set_names(network.features)
             im.bipartite_start_id = network.bipartite_start_id
-            if network.states:
+            if bipartite_non_backtracking:
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
 
@@ -122,7 +122,8 @@ def run(file,
         return
 
     if write_network:
-        network.write(path.join(outdir, basename) + ".net")
+        with open(path.join(outdir, basename) + ".net", "w") as fp:
+            network.write(fp)
 
     run_infomap(basename,
                 outdir,
