@@ -25,8 +25,8 @@ class TreeNode:
     def write(self, fp):
         fp.write("{} {} \"{}\" {} {}\n".format(":".join(map(str, self.path)),
                                                self.flow,
-                                               self.name.title(),
-                                               self.state_id if self.state_id else self.id,
+                                               self.name,
+                                               self.state_id if self.state_id is not None else self.id,
                                                self.id))
 
     @property
