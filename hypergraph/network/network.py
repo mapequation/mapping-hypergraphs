@@ -76,3 +76,38 @@ class MultilayerNetwork(Network):
         fp.write("*Multilayer\n")
         fp.writelines("{} {} {} {} {}\n".format(e1, u, e2, v, w)
                       for (e1, u), (e2, v), w in self.links)
+
+
+def network_from_file(filename: str) -> Union[Network, StateNetwork]:
+    with open(filename) as fp:
+        lines = fp.readlines()
+
+    nodes, states, links = [], [], []
+
+    context = None
+
+    for line in lines:
+        line = line.strip()
+
+        if line.startswith("*"):
+            context = line
+            continue
+        if line.startswith("#"):
+            continue
+
+        if context == "*Vertices":
+            split_index = line.index(" ")
+            id_, name = line[:split_index], line[split_index + 1:]
+            name = name.strip("\"")
+            nodes.append(Node(int(id_), name))
+        elif context == "*States":
+            state_id, node_id = map(int, line.split())
+            states.append(StateNode(state_id, node_id))
+        elif context == "*Links":
+            source, target, weight = line.split()
+            links.append((int(source), int(target), float(weight)))
+
+    if len(states):
+        return StateNetwork(nodes, links, states)
+
+    return Network(nodes, links)
