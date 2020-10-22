@@ -1,9 +1,13 @@
 import os
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
-from typing import Tuple, Optional, Iterable, List, Callable
+from operator import attrgetter
+from typing import Tuple, Optional, Iterable, List, Callable, Dict
+
+from hypergraph.network import StateNetwork
 
 Path = Tuple[int, ...]
 
@@ -123,6 +127,33 @@ class Tree:
             nodes = filterfalse(node_filter, nodes)
 
         return cls(list(map(TreeNode.from_str, nodes)), **kwargs)
+
+    def initial_partition(self, network: StateNetwork) -> Dict[int, int]:
+        tree_nodes = {node.id: node for node in self.nodes}
+
+        return {node.state_id: tree_nodes[node.node_id].top_module
+                for node in network.states}
+
+    def cluster_data(self, network: StateNetwork):
+        tree_nodes = {node.id: node for node in self.nodes}
+
+        leaf_index = defaultdict(int)
+
+        def path(tree_path: Path) -> Path:
+            module = tree_path[:-1]
+            leaf_index[module] += 1
+            return *module, leaf_index[module]
+
+        zero_flow = 0.0
+
+        mapped_nodes = (TreeNode(path(tree_nodes[node_id].path),
+                                 zero_flow,
+                                 tree_nodes[node_id].name,
+                                 node_id,
+                                 state_id)
+                        for state_id, node_id in network.states)
+
+        return Tree(sorted(mapped_nodes, key=attrgetter("path")))
 
 
 if __name__ == "__main__":
