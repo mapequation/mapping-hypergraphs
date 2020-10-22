@@ -69,8 +69,8 @@ def run(file,
         multilayer_similarity=False,
         bipartite=False,
         bipartite_non_backtracking=False,
-        clique_graph=False,
-        directed_clique=False,
+        unipartite_undirected=False,
+        unipartite_directed=False,
         self_links=False,
         write_network=False,
         largest_cc=False,
@@ -107,11 +107,11 @@ def run(file,
                 im.add_state_nodes(network.states)
             im.add_links(network.links)
 
-    elif clique_graph or directed_clique:
-        network = representation.clique(hypergraph, directed_clique, self_links)
+    elif unipartite_undirected or unipartite_directed:
+        network = representation.unipartite(hypergraph, unipartite_directed, self_links)
 
-        basename = outfile if outfile else "clique"
-        basename += "_directed" if directed_clique else ""
+        basename = outfile if outfile else "unipartite"
+        basename += "_directed" if unipartite_directed else "_undirected"
         basename += "_self_links" if self_links else ""
 
         def set_network(im: Infomap):
@@ -122,13 +122,14 @@ def run(file,
         return
 
     if write_network:
-        with open(path.join(outdir, basename) + ".net", "w") as fp:
+        network_filename = path.join(outdir, basename) + ".net"
+        with open(network_filename, "w") as fp:
             network.write(fp)
 
     run_infomap(basename,
                 outdir,
                 set_network,
-                directed=not clique_graph,
+                directed=not unipartite_undirected,
                 self_links=self_links,
                 **kwargs)
 
@@ -179,8 +180,8 @@ def main():
     options.add_argument("-M", "--multilayer-similarity", action="store_true")
     options.add_argument("-b", "--bipartite", action="store_true")
     options.add_argument("-B", "--bipartite-non-backtracking", action="store_true")
-    options.add_argument("-c", "--clique-graph", action="store_true")
-    options.add_argument("-C", "--directed-clique", action="store_true")
+    options.add_argument("-u", "--unipartite-undirected", action="store_true")
+    options.add_argument("-U", "--unipartite-directed", action="store_true")
 
     args = parser.parse_args()
 

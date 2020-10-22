@@ -62,20 +62,20 @@ RUN := python -m hypergraph
 	all_representations \
 	bipartite \
 	bipartite_non_backtracking \
-	clique \
-	clique_self_links \
-	clique_directed \
-	clique_directed_self_links \
+	unipartite_undirected \
+	unipartite_undirected_self_links \
+	unipartite_directed \
+	unipartite_directed_self_links \
 	multilayer \
 	multilayer_self_links
 
 all_representations: \
 	bipartite \
 	bipartite_non_backtracking \
-	clique \
-	clique_self_links \
-	clique_directed \
-	clique_directed_self_links \
+	unipartite_undirected \
+	unipartite_undirected_self_links \
+	unipartite_directed \
+	unipartite_directed_self_links \
 	multilayer \
 	multilayer_self_links \
 	multilayer_similarity \
@@ -84,8 +84,8 @@ all_representations: \
 weighted_representations: \
 	bipartite \
 	bipartite_non_backtracking \
-	clique_directed \
-	clique_directed_self_links \
+	unipartite_directed \
+	unipartite_directed_self_links \
 	multilayer \
 	multilayer_self_links \
 	multilayer_similarity \
@@ -97,17 +97,17 @@ bipartite:
 bipartite_non_backtracking:
 	$(RUN) -B $(FLAGS)
 
-clique:
-	$(RUN) -c $(FLAGS)
+unipartite_undirected:
+	$(RUN) -u $(FLAGS)
 
-clique_self_links:
-	$(RUN) -ck $(FLAGS)
+unipartite_undirected_self_links:
+	$(RUN) -uk $(FLAGS)
 
-clique_directed:
-	$(RUN) -C $(FLAGS)
+unipartite_directed:
+	$(RUN) -U $(FLAGS)
 
-clique_directed_self_links:
-	$(RUN) -Ck $(FLAGS)
+unipartite_directed_self_links:
+	$(RUN) -Uk $(FLAGS)
 
 multilayer:
 	$(RUN) -m $(FLAGS)

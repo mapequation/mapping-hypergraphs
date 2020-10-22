@@ -2,7 +2,6 @@ import math
 from typing import Tuple, Sequence, Union
 
 from references.get_citations import get_citations
-from references.parse_references import parse
 
 Weight = Union[int, float]
 
@@ -81,9 +80,3 @@ def write_hypergraph(hypergraph,
                                                  gamma_function(len(node_ids),
                                                                 equal_contributions=is_sorted(
                                                                     [last_names[node_id] for node_id in node_ids]))))
-
-
-if __name__ == "__main__":
-    with open("data/networks-beyond-pairwise-interactions-references.tex") as texfile, \
-            open("data/networks-beyond-pairwise-interactions.txt", "w") as outfile:
-        write_hypergraph(parse(texfile), outfile, omega_function=omega_citations)

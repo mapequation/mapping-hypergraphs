@@ -92,7 +92,3 @@ def weighted_jaccard_dist(networks: Sequence[Tree]) -> pd.DataFrame:
         dist[i, j] = 1 - weighted_jaccard_distance(partitions[i], partitions[j])
 
     return pd.DataFrame(data=dist, columns=list(index.keys()))
-
-
-if __name__ == "__main__":
-    print(wjaccard("output/clique_seed_1.ftree", "output/clique_directed_seed_1.ftree"))

@@ -90,9 +90,6 @@ def pretty_filename(filename: str) -> str:
     if "backtracking" in kind:
         kind = "non-bt"
 
-    if "directed" in kind:
-        kind = kind.replace("directed", "dir.")
-
     return "{} ({})".format(representation, kind) if kind else representation
 
 
@@ -154,10 +151,3 @@ class Tree:
                         for state_id, node_id in network.states)
 
         return Tree(sorted(mapped_nodes, key=attrgetter("path")))
-
-
-if __name__ == "__main__":
-    node = TreeNode.from_str("1:1:2 0.333333 \"c aoeu\" 1")
-    print(node.module)
-    print(TreeNode.from_str("1:1 0.333333 \"c aoeu\" 2 1"))
-    print(TreeNode.from_str("1:1 0.333333 \"c aoeu 123\" 2 1 3"))

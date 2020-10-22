@@ -107,7 +107,7 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) \
 
 def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) -> Callable[[Node, Node, bool], float]:
     """
-    Weight for going between vertex u to v in a clique graph representation
+    Weight for going between vertex u to v in a unipartite representation
     of a hypergraph with edge-independent vertex weights.
 
     Assumes edge-independent vertex weights.
