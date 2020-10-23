@@ -1,4 +1,4 @@
-# Mapping higher-order flows on hypergraphs
+# Mapping flows on hypergraphs
 
 ## Requirements
 
