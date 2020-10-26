@@ -13,7 +13,7 @@ example: clean all_representations
 .PHONY: two_modules
 
 two_modules: INPUT := $(DATA)/two-modules.txt
-two_modules: FLAGS := -w --teleportation-probability 0 $(ARGS)
+two_modules: FLAGS := -w $(ARGS)
 two_modules: clean all_representations
 
 # REFERENCES
