@@ -51,10 +51,10 @@ def overlap_coeff(e1: HyperEdge, e2: HyperEdge) -> float:
 
 
 def make_js_similarity(gamma: Callable[[HyperEdge, Node], float]) -> SimilarityMetric:
-    def js_divergence(x1: np.array, x2: np.array) -> float:
-        mix = 0.5 * (x1 + x2)
+    def js_divergence(p: np.array, q: np.array) -> float:
+        mix = 0.5 * (p + q)
 
-        jsd = 0.5 * entropy(x1, mix, base=2) + 0.5 * entropy(x2, mix, base=2)
+        jsd = 0.5 * entropy(p, mix, base=2) + 0.5 * entropy(q, mix, base=2)
 
         if jsd < 0 or jsd > 1:
             raise RuntimeWarning("JSD out of bounds")
