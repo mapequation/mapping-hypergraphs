@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
 from operator import attrgetter
-from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO
+from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO, Set, Mapping
 
 from hypergraph.network import StateNetwork
 
@@ -158,74 +158,92 @@ class Tree:
 
         return Tree(sorted(mapped_nodes, key=attrgetter("path")))
 
-    def match_ids(self, networks) -> None:
-        state_ids = defaultdict(set)  # node id -> set of state other_state_ids
-        layer_ids = defaultdict(int)  # (node id, layer id) -> state id
+    @property
+    def state_ids(self) -> Mapping[int, Set[int]]:
+        state_ids = defaultdict(set)  # node id -> set of state ids
 
         for node in self.nodes:
             state_ids[node.id].add(node.state_id)
+
+        return dict(state_ids)
+
+    @property
+    def layer_ids(self) -> Mapping[Tuple[int, int], Set[int]]:
+        layer_ids = defaultdict(int)  # (node id, layer id) -> state id
+
+        for node in self.nodes:
             layer_ids[node.id, node.layer_id] = node.state_id
 
-        state_ids = dict(state_ids)
-        layer_ids = dict(layer_ids)
+        return dict(layer_ids)
 
+    def match_ids(self, networks) -> None:
         for network in networks:
             if network is self:
                 continue
 
             if network.is_multilayer:
-                multilayer_state_ids = set()
-
-                for node in network.nodes:
-                    node.state_id = layer_ids[node.id, node.layer_id]
-                    multilayer_state_ids.add(node.state_id)
-
-                missing_nodes = (node for node in self.nodes
-                                 if node.state_id not in multilayer_state_ids)
-
-                first_free_module_id = max(map(attrgetter("top_module"), network.nodes)) + 1
-
-                network.nodes.extend(TreeNode((first_free_module_id + i, 1),
-                                              0,
-                                              missing_node.name,
-                                              missing_node.id,
-                                              missing_node.state_id)
-                                     for i, missing_node in enumerate(missing_nodes))
-
+                self._match_multilayer_ids(network)
             else:
-                missing_nodes = []
+                self._match_network_ids(network)
 
-                # 0. we need to set the leaf node index correctly
-                path = make_indexed_path()
-                list(map(path, network.nodes))
+    def _match_multilayer_ids(self, network) -> None:
+        layer_ids = self.layer_ids
 
-                for node in network.nodes:
-                    # 1. set the state id of the already existing node
-                    # 2. add nodes for each remaining state node
-                    # 3. divide the flow evenly between them
-                    other_state_ids = state_ids[node.id].copy()
+        for node in network.nodes:
+            node.state_id = layer_ids[node.id, node.layer_id]
 
-                    node.flow /= len(other_state_ids)
-                    node.state_id = other_state_ids.pop()
+        network_state_ids = {node.state_id for node in network.nodes}
 
-                    missing_nodes.extend(TreeNode(path(node),
-                                                  node.flow,
-                                                  node.name,
-                                                  node.id,
-                                                  other_state_id)
-                                         for other_state_id in other_state_ids)
+        missing_nodes = (node for node in self.nodes
+                         if node.state_id not in network_state_ids)
 
-                network.nodes.extend(missing_nodes)
+        first_free_module_id = max(map(attrgetter("top_module"), network.nodes)) + 1
 
-                network.nodes.sort(key=attrgetter("path"))
+        network.nodes.extend(TreeNode((first_free_module_id + i, 1),
+                                      0,
+                                      missing_node.name,
+                                      missing_node.id,
+                                      missing_node.state_id)
+                             for i, missing_node in enumerate(missing_nodes))
+
+    def _match_network_ids(self, network) -> None:
+        state_ids = self.state_ids
+
+        missing_nodes = []
+
+        # 0. we need to set the leaf node index correctly
+        path = make_indexed_path(network.nodes)
+
+        for node in network.nodes:
+            # 1. set the state id of the already existing node
+            # 2. add nodes for each remaining state node
+            # 3. divide the flow evenly between them
+            other_state_ids = state_ids[node.id].copy()
+
+            node.flow /= len(other_state_ids)
+            node.state_id = other_state_ids.pop()
+
+            missing_nodes.extend(TreeNode(path(node),
+                                          node.flow,
+                                          node.name,
+                                          node.id,
+                                          other_state_id)
+                                 for other_state_id in other_state_ids)
+
+        network.nodes.extend(missing_nodes)
+        network.nodes.sort(key=attrgetter("path"))
 
 
-def make_indexed_path() -> Callable[[TreeNode], Path]:
+def make_indexed_path(nodes: Optional[Iterable[TreeNode]] = None) -> Callable[[TreeNode], Path]:
     leaf_index = defaultdict(int)
 
     def path(node: TreeNode) -> Path:
         module = node.path[:-1]
         leaf_index[module] += 1
         return *module, leaf_index[module]
+
+    if nodes:
+        for node in nodes:
+            path(node)
 
     return path
