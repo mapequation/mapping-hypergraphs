@@ -60,6 +60,7 @@ RUN := python -m hypergraph
 
 .PHONY: \
 	all_representations \
+	weighted_representations \
 	bipartite \
 	bipartite_non_backtracking \
 	unipartite_undirected \
@@ -68,18 +69,6 @@ RUN := python -m hypergraph
 	unipartite_directed_self_links \
 	multilayer \
 	multilayer_self_links
-
-all_representations: \
-	bipartite \
-	bipartite_non_backtracking \
-	unipartite_undirected \
-	unipartite_undirected_self_links \
-	unipartite_directed \
-	unipartite_directed_self_links \
-	multilayer \
-	multilayer_self_links \
-	multilayer_similarity \
-	multilayer_similarity_self_links
 
 weighted_representations: \
 	bipartite \
@@ -90,6 +79,11 @@ weighted_representations: \
 	multilayer_self_links \
 	multilayer_similarity \
 	multilayer_similarity_self_links
+
+all_representations: \
+	weighted_representations \
+	unipartite_undirected \
+	unipartite_undirected_self_links
 
 bipartite:
 	$(RUN) -b $(FLAGS)
