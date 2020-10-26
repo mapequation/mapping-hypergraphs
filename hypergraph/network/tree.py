@@ -1,3 +1,4 @@
+import math
 import os
 import re
 from collections import defaultdict
@@ -5,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
 from operator import attrgetter
-from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO, Set, Mapping
+from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO
 
 from hypergraph.network import StateNetwork
 
@@ -158,24 +159,6 @@ class Tree:
 
         return Tree(sorted(mapped_nodes, key=attrgetter("path")))
 
-    @property
-    def state_ids(self) -> Mapping[int, Set[int]]:
-        state_ids = defaultdict(set)  # node id -> set of state ids
-
-        for node in self.nodes:
-            state_ids[node.id].add(node.state_id)
-
-        return dict(state_ids)
-
-    @property
-    def layer_ids(self) -> Mapping[Tuple[int, int], Set[int]]:
-        layer_ids = defaultdict(int)  # (node id, layer id) -> state id
-
-        for node in self.nodes:
-            layer_ids[node.id, node.layer_id] = node.state_id
-
-        return dict(layer_ids)
-
     def match_ids(self, networks) -> None:
         for network in networks:
             if network is self:
@@ -187,10 +170,10 @@ class Tree:
                 self._match_network_ids(network)
 
     def _match_multilayer_ids(self, network) -> None:
-        layer_ids = self.layer_ids
+        state_ids = {(node.id, node.layer_id): node.state_id for node in self.nodes}
 
         for node in network.nodes:
-            node.state_id = layer_ids[node.id, node.layer_id]
+            node.state_id = state_ids[node.id, node.layer_id]
 
         network_state_ids = {node.state_id for node in network.nodes}
 
@@ -207,7 +190,12 @@ class Tree:
                              for i, missing_node in enumerate(missing_nodes))
 
     def _match_network_ids(self, network) -> None:
-        state_ids = self.state_ids
+        self_state_nodes = defaultdict(list)
+
+        for node in self.nodes:
+            self_state_nodes[node.id].append(node)
+
+        self_state_nodes = dict(self_state_nodes)
 
         missing_nodes = []
 
@@ -217,18 +205,25 @@ class Tree:
         for node in network.nodes:
             # 1. set the state id of the already existing node
             # 2. add nodes for each remaining state node
-            # 3. divide the flow evenly between them
-            other_state_ids = state_ids[node.id].copy()
+            # 3. divide the flow between them
+            state_nodes = self_state_nodes[node.id]
 
-            node.flow /= len(other_state_ids)
-            node.state_id = other_state_ids.pop()
+            first, *remaining = state_nodes
+            node.state_id = first.state_id
+
+            divide_flow = not math.isclose(node.flow, sum(node.flow for node in state_nodes), rel_tol=0.01)
+
+            if divide_flow:
+                node.flow /= len(state_nodes)
+            else:
+                node.flow = first.flow
 
             missing_nodes.extend(TreeNode(path(node),
-                                          node.flow,
+                                          node.flow if divide_flow else state_node.flow,
                                           node.name,
                                           node.id,
-                                          other_state_id)
-                                 for other_state_id in other_state_ids)
+                                          state_node.state_id)
+                                 for state_node in remaining)
 
         network.nodes.extend(missing_nodes)
         network.nodes.sort(key=attrgetter("path"))
