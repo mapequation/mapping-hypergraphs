@@ -100,6 +100,9 @@ class Tree:
     is_bipartite: bool = False
     is_multilayer: bool = False
     filename: Optional[str] = None
+    levels: Optional[int] = None
+    num_top_modules: Optional[int] = None
+    codelength: Optional[float] = None
 
     @property
     def pretty_filename(self) -> str:
@@ -113,9 +116,32 @@ class Tree:
             node.write(fp)
 
     @classmethod
+    def parse_header(cls, lines: Iterable[str]) -> Tuple[float, int, int]:
+        header = takewhile(lambda line: line.startswith("#"), lines)
+
+        # partitioned into 4 levels with 286 top modules
+        line = next(filter(lambda line: line.startswith("# partitioned into"), header)).split()
+        levels, num_top_modules = int(line[3]), int(line[6])
+
+        # codelength 3.11764 bits
+        line = next(filter(lambda line: line.startswith("# codelength"), header)).split()
+        codelength = float(line[2])
+
+        return codelength, levels, num_top_modules
+
+    @classmethod
     def from_file(cls, filename: str, **kwargs):  # -> Tree
         with open(filename) as fp:
-            return cls.from_iter(fp.readlines(), filename=filename, **kwargs)
+            lines = fp.readlines()
+
+            codelength, levels, num_top_modules = cls.parse_header(lines)
+
+            return cls.from_iter(lines,
+                                 filename=filename,
+                                 levels=levels,
+                                 num_top_modules=num_top_modules,
+                                 codelength=codelength,
+                                 **kwargs)
 
     @classmethod
     def from_files(cls, filenames: Sequence[str]):  # -> List[Tree]

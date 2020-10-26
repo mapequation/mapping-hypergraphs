@@ -41,22 +41,7 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
     summary = defaultdict(list)
 
     for network in networks:
-        name = network.filename
-
-        with open(name) as fp:
-            lines = fp.readlines()
-
-        header = takewhile(lambda line: line.startswith("#"), lines)
-        # partitioned into 4 levels with 286 top modules
-        line = next(filter(lambda line: line.startswith("# partitioned into"), header)).split()
-        levels = int(line[3])
-        top_modules = int(line[6])
-
-        # codelength 3.11764 bits
-        line = next(filter(lambda line: line.startswith("# codelength"), header)).split()
-        codelength = float(line[2])
-
-        states_filename = os.path.splitext(name)[0] + "_states.net"
+        states_filename = os.path.splitext(network.filename)[0] + "_states.net"
 
         with open(states_filename) as states_fp:
             states_lines = states_fp.readlines()
@@ -70,8 +55,8 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
         summary["network"].append(network.pretty_filename)
         summary["num states"].append(num_states)
         summary["num links"].append(num_links)
-        summary["levels"].append(levels)
-        summary["top modules"].append(top_modules)
-        summary["codelength"].append(codelength)
+        summary["levels"].append(network.levels)
+        summary["top modules"].append(network.num_top_modules)
+        summary["codelength"].append(network.codelength)
 
     return pd.DataFrame(data=summary)
