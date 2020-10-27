@@ -25,7 +25,7 @@ class Network:
 
     def _write_nodes(self, fp: TextIO):
         fp.write("*Vertices\n")
-        fp.writelines(f"{node.id} \"{node.name}\"\n" for node in self.nodes)
+        fp.writelines(f"{node.id} \"{node.name}\"\n" for node in sorted(self.nodes))
 
     def _write_links(self, fp: TextIO):
         fp.write("*Edges\n")
@@ -87,7 +87,7 @@ class StateNetwork(Network):
     def _write_states(self, fp: TextIO):
         fp.write("*States\n")
         fp.writelines(f"{state.state_id} {state.node_id}\n"
-                      for state in self.states)
+                      for state in sorted(self.states))
 
 
 @dataclass
@@ -106,7 +106,7 @@ class BipartiteNetwork(Network):
     def _write_nodes(self, fp: TextIO):
         super()._write_nodes(fp)
         fp.writelines(f"{node.id} \"{node.name}\"\n"
-                      for node in self.features)
+                      for node in sorted(self.features))
 
     def _write_links(self, fp: TextIO):
         fp.write(f"*Bipartite {self.bipartite_start_id}\n")
