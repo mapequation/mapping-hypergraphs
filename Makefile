@@ -9,12 +9,12 @@ example: INPUT := $(DATA)/example.txt
 example: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example: clean all_representations
 
-# TWO MODULES
-.PHONY: two_modules
+# EXAMPLE FOR PAPER
+.PHONY: example_for_paper
 
-two_modules: INPUT := $(DATA)/two-modules.txt
-two_modules: FLAGS := -w $(ARGS)
-two_modules: clean all_representations
+example_for_paper: INPUT := $(DATA)/example-paper.txt
+example_for_paper: FLAGS := $(ARGS)
+example_for_paper: clean weighted_representations
 
 # REFERENCES
 .PHONY: references references_weighted
