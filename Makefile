@@ -9,6 +9,13 @@ example: INPUT := $(DATA)/example.txt
 example: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example: clean all_representations
 
+# MINIMAL EXAMPLE
+.PHONY: minimal
+
+minimal: INPUT := $(DATA)/minimal.txt
+minimal: FLAGS := -w teleportation-probability 0 $(ARGS)
+minimal: clean weighted_representations
+
 # EXAMPLE FOR PAPER
 .PHONY: example_for_paper
 
