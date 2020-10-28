@@ -50,8 +50,15 @@ class HyperGraph:
 
         edges = parse_edges(edges_lines, nodes)
 
+        nodes = filter_dangling(nodes, edges)
+
         if len(weights_lines):
             weights = parse_weights(weights_lines, nodes)
+
+            if len(weights) < len(nodes):
+                found_weights = {weight.node.id for weight in weights}
+                missing_weights = set(nodes.keys()) - found_weights
+                raise RuntimeError(f"Weights missing for {', '.join(map(str, missing_weights))}")
         else:
             weights = unit_weights(edges)
 
@@ -80,6 +87,13 @@ def read(lines) -> Tuple[List[str], List[str], List[str]]:
             weights.append(line)
 
     return nodes, edges, weights
+
+
+def filter_dangling(nodes: Mapping[int, Node], edges: Sequence[HyperEdge]) -> Dict[int, Node]:
+    referenced_nodes = {node.id for edge in edges for node in edge.nodes}
+
+    return {node.id: node for node in nodes.values()
+            if node.id in referenced_nodes}
 
 
 def parse_nodes(lines: Sequence[str]) -> Dict[int, Node]:
