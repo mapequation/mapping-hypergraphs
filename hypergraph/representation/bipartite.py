@@ -1,5 +1,4 @@
 from collections import defaultdict
-from itertools import product
 from operator import attrgetter
 from typing import Union
 
@@ -29,34 +28,33 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
     if non_backtracking:
         get_state_id = defaultdict(lambda: len(get_state_id) + 1)
 
-        states = [StateNode(get_state_id[node.id], node.id) for node in nodes]
+        states = [StateNode(get_state_id[node.id], node.id) for node in sorted(nodes)]
 
-        for e1, e2 in product(edges, edges):
-            for u, v in product(e1.nodes, e2.nodes):
-                if u.id == v.id:
-                    continue
+        for edge in edges:
+            feature_id = edge_to_feature_id[edge.id]
 
-                if u not in e2.nodes:
-                    continue
+            state_ids = (get_state_id[node.id] for node in edge.nodes)
 
-                hyperedge_weight = e2.omega / d_(u)
-                feature_weight = gamma_(e2, v) / (delta_(e2) - gamma_(e2, u))
+            feature_states = [StateNode(get_state_id[feature_id, state_id], feature_id)
+                              for state_id in state_ids]
+
+            states.extend(feature_states)
+
+            for node in edge.nodes:
+                hyperedge_weight = edge.omega
+                feature_weight = gamma_(edge, node)
 
                 if hyperedge_weight * feature_weight < 1e-10:
                     continue
 
-                source_id = get_state_id[u.id]
-                target_id = get_state_id[v.id]
-                feature_id = edge_to_feature_id[e2.id]
+                state_id = get_state_id[node.id]
+                target_feature_state_id = get_state_id[feature_id, state_id]
 
-                create_feature_state = (feature_id, source_id) not in get_state_id
-                feature_state_id = get_state_id[feature_id, source_id]
+                links[state_id, target_feature_state_id] = hyperedge_weight
 
-                if create_feature_state:
-                    states.append(StateNode(feature_state_id, feature_id))
-
-                links[source_id, feature_state_id] += hyperedge_weight
-                links[feature_state_id, target_id] += feature_weight
+                for source_feature_state_id, node_id in feature_states:
+                    if source_feature_state_id != target_feature_state_id:
+                        links[source_feature_state_id, state_id] = feature_weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
