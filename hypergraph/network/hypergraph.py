@@ -67,10 +67,7 @@ class HyperGraph:
         if len(weights_lines):
             weights = parse_weights(weights_lines, nodes)
 
-            if len(weights) < len(nodes):
-                found_weights = {weight.node.id for weight in weights}
-                missing_weights = set(nodes.keys()) - found_weights
-                raise RuntimeError(f"Weights missing for {', '.join(map(str, missing_weights))}")
+            weights.extend(missing_unit_weights(weights, edges, nodes))
         else:
             weights = unit_weights(edges)
 
@@ -138,5 +135,16 @@ def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma
 
 
 def unit_weights(edges: Sequence[HyperEdge]) -> List[Gamma]:
-    return [Gamma(edge.id, node, float(1))
+    return [Gamma(edge.id, node, 1.0)
             for edge in edges for node in edge.nodes]
+
+
+def missing_unit_weights(weights: Sequence[Gamma], edges: Sequence[HyperEdge], nodes: Mapping[int, Node]) \
+        -> List[Gamma]:
+    found_weights = {(weight.edge, weight.node.id) for weight in weights}
+
+    required_weights = {(edge.id, node.id) for edge in edges for node in edge.nodes}
+
+    missing_weights = required_weights - found_weights
+
+    return [Gamma(edge, nodes[node_id], 1.0) for edge, node_id in missing_weights]
