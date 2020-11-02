@@ -1,5 +1,5 @@
 import re
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from dataclasses import dataclass
 from operator import methodcaller
 from typing import Iterable, List, Tuple, Sequence, Mapping, Dict
@@ -8,6 +8,15 @@ from .network import Node
 
 HyperEdge = namedtuple("HyperEdge", "id, nodes, omega")
 Gamma = namedtuple("Gamma", "edge, node, gamma")
+
+
+class DefaultNodeDict(defaultdict):
+    def __missing__(self, key):
+        if self.default_factory is None:
+            raise KeyError(key)
+
+        ret = self[key] = self.default_factory(key)
+        return ret
 
 
 @dataclass
@@ -47,6 +56,9 @@ class HyperGraph:
         nodes_lines, edges_lines, weights_lines = read(lines)
 
         nodes = parse_nodes(nodes_lines)
+
+        if len(nodes) == 0:
+            nodes = DefaultNodeDict(lambda node_id: Node(node_id, str(node_id)))
 
         edges = parse_edges(edges_lines, nodes)
 
