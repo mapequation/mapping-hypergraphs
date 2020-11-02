@@ -13,14 +13,14 @@ example: clean all_representations
 .PHONY: minimal
 
 minimal: INPUT := $(DATA)/minimal.txt
-minimal: FLAGS := -w teleportation-probability 0 $(ARGS)
+minimal: FLAGS := -w --teleportation-probability 0 $(ARGS)
 minimal: clean weighted_representations
 
 # EXAMPLE FOR PAPER
 .PHONY: example_for_paper
 
 example_for_paper: INPUT := $(DATA)/example-paper.txt
-example_for_paper: FLAGS := $(ARGS)
+example_for_paper: FLAGS := -w --teleportation-probability 0 $(ARGS)
 example_for_paper: clean weighted_representations
 
 # REFERENCES
