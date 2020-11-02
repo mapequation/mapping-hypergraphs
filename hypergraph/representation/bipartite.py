@@ -64,23 +64,17 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
         return BipartiteStateNetwork(nodes, links, states, features)
 
     else:
-        for e1, e2 in product(edges, edges):
-            for u, v in product(e1.nodes, e2.nodes):
-                if u not in e2.nodes:
-                    continue
-
-                hyperedge_weight = e2.omega / d_(u)
-                feature_weight = gamma_(e2, v) / delta_(e2)
+        for edge in edges:
+            for node in edge.nodes:
+                hyperedge_weight = edge.omega
+                feature_weight = gamma_(edge, node)
 
                 if hyperedge_weight * feature_weight < 1e-10:
                     continue
 
-                source_id = u.id
-                target_id = v.id
-                feature_id = edge_to_feature_id[e2.id]
-
-                links[source_id, feature_id] += hyperedge_weight
-                links[feature_id, target_id] += feature_weight
+                feature_id = edge_to_feature_id[edge.id]
+                links[node.id, feature_id] = hyperedge_weight
+                links[feature_id, node.id] = feature_weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
