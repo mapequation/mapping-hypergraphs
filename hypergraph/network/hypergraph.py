@@ -2,7 +2,7 @@ import re
 from collections import namedtuple, defaultdict
 from dataclasses import dataclass
 from operator import methodcaller
-from typing import Iterable, List, Tuple, Sequence, Mapping, Dict
+from typing import Iterable, List, Tuple, Sequence, Mapping, Dict, Set
 
 from .network import Node
 
@@ -24,7 +24,7 @@ class HyperGraph:
     """
     Format:
 
-        *Vertices
+        *Vertices # optional
         # id name
         1 "a"
         2 "b"
@@ -35,7 +35,7 @@ class HyperGraph:
         # id nodes... omega
         1 1 2 3 10      # e1
         2 3 4 5 20      # e2
-        *Weights # optional
+        *Weights # optional, missing weights defaults to gamma = 1.0
         # edge node gamma
         1 1 1      # gamma_e1(a)
         1 2 1      # gamma_e1(b)
@@ -67,9 +67,9 @@ class HyperGraph:
         if len(weights_lines):
             weights = parse_weights(weights_lines, nodes)
 
-            weights.extend(missing_unit_weights(weights, edges, nodes))
+            weights.extend(missing_default_weights(edges, weights))
         else:
-            weights = unit_weights(edges)
+            weights = default_weights(edges)
 
         return cls(list(nodes.values()), edges, weights)
 
@@ -127,24 +127,25 @@ def parse_edges(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[HyperEd
 
 
 def parse_weights(lines: Sequence[str], nodes: Mapping[int, Node]) -> List[Gamma]:
-    lines_ = (tuple(map(int, first)) + (float(gamma),)
-              for *first, gamma in map(methodcaller("split"), lines))
+    lines_ = (tuple(map(int, ids)) + (float(gamma),)
+              for *ids, gamma in map(methodcaller("split"), lines))
 
     return [Gamma(edge, nodes[node_id], gamma)
             for edge, node_id, gamma in lines_]
 
 
-def unit_weights(edges: Sequence[HyperEdge]) -> List[Gamma]:
-    return [Gamma(edge.id, node, 1.0)
+def default_weights(edges: Sequence[HyperEdge], weight: float = 1.0) -> List[Gamma]:
+    return [Gamma(edge.id, node, weight)
             for edge in edges for node in edge.nodes]
 
 
-def missing_unit_weights(weights: Sequence[Gamma], edges: Sequence[HyperEdge], nodes: Mapping[int, Node]) \
-        -> List[Gamma]:
-    found_weights = {(weight.edge, weight.node.id) for weight in weights}
+def missing_default_weights(edges: Sequence[HyperEdge], weights: Sequence[Gamma], weight: float = 1.0) -> List[Gamma]:
+    return [Gamma(edge, node, weight) for edge, node in missing_weights(edges, weights)]
 
-    required_weights = {(edge.id, node.id) for edge in edges for node in edge.nodes}
 
-    missing_weights = required_weights - found_weights
+def missing_weights(edges: Sequence[HyperEdge], weights: Sequence[Gamma]) -> Set[Tuple[int, Node]]:
+    found_weights = {(weight.edge, weight.node) for weight in weights}
 
-    return [Gamma(edge, nodes[node_id], 1.0) for edge, node_id in missing_weights]
+    all_nodes = {(edge.id, node) for edge in edges for node in edge.nodes}
+
+    return all_nodes - found_weights
