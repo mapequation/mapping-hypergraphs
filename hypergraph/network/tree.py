@@ -8,6 +8,8 @@ from itertools import filterfalse, takewhile, dropwhile
 from operator import attrgetter
 from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO
 
+from scipy.stats import entropy
+
 from hypergraph.network import StateNetwork
 
 Path = Tuple[int, ...]
@@ -160,6 +162,27 @@ class Tree:
             nodes = filterfalse(node_filter, nodes)
 
         return cls(list(map(TreeNode.from_str, nodes)), **kwargs)
+
+    @property
+    def assignments(self) -> List[int]:
+        assignments_ = defaultdict(set)
+
+        for node in self.nodes:
+            assignments_[node.id].add(node.module)
+
+        return sorted(map(len, assignments_.values()), reverse=True)
+
+    @property
+    def effective_assignments(self) -> List[float]:
+        assignments_ = defaultdict(lambda: defaultdict(int))
+
+        for node in self.nodes:
+            assignments_[node.id][node.module] += 1
+
+        effective_assignments_ = (2 ** entropy(list(node_assignments.values()), base=2)
+                                  for node_assignments in assignments_.values())
+
+        return sorted(effective_assignments_, reverse=True)
 
     def initial_partition(self, network: StateNetwork) -> Dict[int, int]:
         tree_nodes = {node.id: node for node in self.nodes}

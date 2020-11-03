@@ -1,40 +1,12 @@
 import os
 from collections import defaultdict
 from itertools import takewhile, dropwhile
+from statistics import mean
 from typing import Sequence
 
 import pandas as pd
-from scipy.stats import entropy
 
 from hypergraph.network import Tree
-
-
-def assignments(network: Tree) -> pd.DataFrame:
-    assignments_ = defaultdict(set)
-
-    for node in network.nodes:
-        assignments_[node.id].add(node.module)
-
-    assignments_ = {node_id: len(modules)
-                    for node_id, modules in assignments_.items()}
-
-    return pd.DataFrame(data={network.pretty_filename: sorted(assignments_.values(), reverse=True)})
-
-
-def perplexity(x) -> float:
-    return 2 ** entropy(x, base=2)
-
-
-def effective_assignments(network: Tree) -> pd.DataFrame:
-    assignments_ = defaultdict(lambda: defaultdict(int))
-
-    for node in network.nodes:
-        assignments_[node.id][node.module] += 1
-
-    perplexity_ = {node_id: perplexity(list(node_assignments.values()))
-                   for node_id, node_assignments in assignments_.items()}
-
-    return pd.DataFrame(data={network.pretty_filename: sorted(perplexity_.values(), reverse=True)})
 
 
 def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
@@ -58,5 +30,7 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
         summary["levels"].append(network.levels)
         summary["top modules"].append(network.num_top_modules)
         summary["codelength"].append(network.codelength)
+        summary["mean assignments"].append(mean(network.assignments))
+        summary["mean eff. assignments"].append(mean(network.effective_assignments))
 
     return pd.DataFrame(data=summary)
