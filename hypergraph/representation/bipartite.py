@@ -3,7 +3,7 @@ from operator import attrgetter
 from typing import Union
 
 from hypergraph.network import HyperGraph, StateNode, Node, BipartiteNetwork, BipartiteStateNetwork
-from hypergraph.transition import gamma, delta, d
+from hypergraph.transition import gamma, d, pi
 
 
 def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[BipartiteNetwork, BipartiteStateNetwork]:
@@ -12,8 +12,8 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
     print("[bipartite] creating bipartite...")
 
     gamma_ = gamma(weights)
-    delta_ = delta(weights)
     d_ = d(edges)
+    pi_ = pi(edges, weights)
 
     bipartite_start_id = max(map(attrgetter("id"), nodes)) + 1
 
@@ -42,9 +42,9 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
 
             for node in edge.nodes:
                 hyperedge_weight = edge.omega
-                feature_weight = gamma_(edge, node)
+                node_weight = gamma_(edge, node)
 
-                if hyperedge_weight * feature_weight < 1e-10:
+                if hyperedge_weight * node_weight < 1e-10:
                     continue
 
                 state_id = get_state_id[node.id]
@@ -54,7 +54,7 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
 
                 for source_feature_state_id, node_id in feature_states:
                     if source_feature_state_id != target_feature_state_id:
-                        links[source_feature_state_id, state_id] = feature_weight
+                        links[source_feature_state_id, state_id] = node_weight
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
@@ -64,15 +64,16 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
     else:
         for edge in edges:
             for node in edge.nodes:
-                hyperedge_weight = edge.omega
-                feature_weight = gamma_(edge, node)
+                P_ue = edge.omega / d_(node)
+                P_ev = gamma_(edge, node)
 
-                if hyperedge_weight * feature_weight < 1e-10:
+                if P_ue * P_ev < 1e-10:
                     continue
 
                 feature_id = edge_to_feature_id[edge.id]
-                links[node.id, feature_id] = hyperedge_weight
-                links[feature_id, node.id] = feature_weight
+
+                links[node.id, feature_id] = pi_(node) * P_ue
+                links[feature_id, node.id] = P_ev
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]

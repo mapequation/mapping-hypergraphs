@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import combinations_with_replacement, product
 
 from hypergraph.network import HyperGraph, Network
-from hypergraph.transition import w, p
+from hypergraph.transition import w, p, P, pi
 
 
 def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> Network:
@@ -11,24 +11,18 @@ def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> 
     print("[unipartite] creating unipartite...")
 
     if directed:
-        links = defaultdict(float)
+        links = []
 
-        p_ = p(edges, weights)
+        P_ = P(edges, weights)
+        pi_ = pi(edges, weights)
 
-        for e1, e2 in product(edges, edges):
-            for u, v in product(e1.nodes, e2.nodes):
-                if not self_links and u.id == v.id:
-                    continue
+        for u, v in product(nodes, repeat=2):
+            weight = pi_(u) * P_(u, v, self_links)
 
-                weight = p_(e1, u, e2, v, self_links)
+            if weight < 1e-10:
+                continue
 
-                if weight < 1e-10:
-                    continue
-
-                links[u.id, v.id] += weight
-
-        links = [(source, target, weight)
-                 for (source, target), weight in sorted(links.items())]
+            links.append((u.id, v.id, weight))
 
     else:
         w_ = w(edges, weights)
@@ -43,4 +37,4 @@ def create_network(hypergraph: HyperGraph, directed: bool, self_links: bool) -> 
 
             links.append((u.id, v.id, weight))
 
-    return Network(nodes, links)
+    return Network(nodes, sorted(links))

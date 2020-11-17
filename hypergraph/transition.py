@@ -105,6 +105,39 @@ def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) \
     return inner
 
 
+def pi(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
+    E_ = E(edges)
+    gamma_ = gamma(weights)
+    edges_ = {edge.id: edge for edge in edges}
+
+    def inner(u: Node) -> float:
+        E_u = {edges_[edge_id] for edge_id in E_(u)}
+
+        return sum(e.omega * gamma_(e, u)
+                   for e in E_u)
+
+    return inner
+
+
+def P(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) -> Callable[[Node, Node, bool], float]:
+    print("[transition] pre-calculating probabilities...")
+    gamma_ = gamma(weights)
+    delta_ = delta(weights)
+    d_ = d(edges)
+    E_ = E(edges)
+    edges_ = {edge.id: edge for edge in edges}
+
+    def inner(u: Node, v: Node, self_links: bool = False) -> float:
+        E_u_v = (edges_[edge_id] for edge_id in E_(u, v))
+
+        delta_e = lambda e: delta_(e) if self_links else delta_(e) - gamma_(e, u)
+
+        return sum(e.omega / d_(u) * gamma_(e, v) / delta_e(e)
+                   for e in E_u_v)
+
+    return inner
+
+
 def w(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) -> Callable[[Node, Node, bool], float]:
     """
     Weight for going between vertex u to v in a unipartite representation
