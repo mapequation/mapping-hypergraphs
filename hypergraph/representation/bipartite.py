@@ -41,20 +41,20 @@ def create_network(hypergraph: HyperGraph, non_backtracking: bool) -> Union[Bipa
             states.extend(feature_states)
 
             for node in edge.nodes:
-                hyperedge_weight = edge.omega
-                node_weight = gamma_(edge, node)
+                P_ue = edge.omega / d_(node)
+                P_ev = gamma_(edge, node)
 
-                if hyperedge_weight * node_weight < 1e-10:
+                if P_ue * P_ev < 1e-10:
                     continue
 
                 state_id = get_state_id[node.id]
                 target_feature_state_id = get_state_id[feature_id, state_id]
 
-                links[state_id, target_feature_state_id] = hyperedge_weight
+                links[state_id, target_feature_state_id] = pi_(node) * P_ue
 
                 for source_feature_state_id, node_id in feature_states:
                     if source_feature_state_id != target_feature_state_id:
-                        links[source_feature_state_id, state_id] = node_weight
+                        links[source_feature_state_id, state_id] = P_ev
 
         links = [(source, target, weight)
                  for (source, target), weight in sorted(links.items())]
