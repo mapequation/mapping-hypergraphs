@@ -119,6 +119,18 @@ def pi(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     return inner
 
 
+def pi_alpha(weights: Iterable[Gamma]) -> Callable[[HyperEdge, Node], float]:
+    gamma_ = gamma(weights)
+
+    def inner(e: HyperEdge, u: Node) -> float:
+        if u not in e.nodes:
+            return 0.0
+
+        return e.omega * gamma_(e, u)
+
+    return inner
+
+
 def P(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) -> Callable[[Node, Node, bool], float]:
     print("[transition] pre-calculating probabilities...")
     gamma_ = gamma(weights)

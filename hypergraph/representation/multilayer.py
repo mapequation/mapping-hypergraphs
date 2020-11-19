@@ -7,27 +7,38 @@ from scipy.stats import entropy
 from sklearn.preprocessing import normalize
 
 from hypergraph.network import HyperGraph, MultilayerNetwork, HyperEdge, Node
-from hypergraph.transition import p, gamma, delta, E
+from hypergraph.transition import pi_alpha, gamma, delta, E, d
 
 
 def create_random_walk(hypergraph: HyperGraph, self_links: bool) -> MultilayerNetwork:
     nodes, edges, weights = hypergraph
 
-    p_ = p(edges, weights)
+    gamma_ = gamma(weights)
+    pi_alpha_ = pi_alpha(weights)
+    delta_ = delta(weights)
+    d_ = d(edges)
+    E_ = E(edges)
 
     links = []
 
-    for e1, e2 in product(edges, edges):
-        for u, v in product(e1.nodes, e2.nodes):
+    for alpha, beta in product(edges, edges):
+        for u, v in product(alpha.nodes, beta.nodes):
             if not self_links and u.id == v.id:
                 continue
 
-            weight = p_(e1, u, e2, v, self_links)
-
-            if weight < 1e-10:
+            if beta.id not in E_(u, v):
                 continue
 
-            links.append((e1.id, u.id, e2.id, v.id, weight))
+            delta_e = delta_(beta) if self_links else delta_(beta) - gamma_(beta, u)
+
+            P_uv = beta.omega / d_(u) * gamma_(beta, v) / delta_e
+
+            if P_uv < 1e-10:
+                continue
+
+            weight = pi_alpha_(alpha, u) * P_uv
+
+            links.append((alpha.id, u.id, beta.id, v.id, weight))
 
     links = [((e1, u), (e2, v), w)
              for e1, u, e2, v, w in sorted(links)]
