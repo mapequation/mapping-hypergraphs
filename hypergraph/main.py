@@ -37,7 +37,7 @@ def run_infomap(basename: str,
     default_args += outdir
 
     print("[infomap] running infomap...")
-    im = Infomap(args if args else '' + default_args)
+    im = Infomap((args if args else '') + default_args)
     network.apply(im)
     im.run()
     im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
@@ -108,9 +108,13 @@ def run(file,
         with open(network_filename, "w") as fp:
             network.write(fp)
 
+    args = "--bipartite-teleportation" \
+        if bipartite or bipartite_non_backtracking else None
+
     run_infomap(basename,
                 outdir,
                 network,
+                args=args,
                 directed=not unipartite_undirected,
                 self_links=self_links,
                 **kwargs)
