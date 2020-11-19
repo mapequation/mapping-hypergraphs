@@ -94,6 +94,7 @@ def create_similarity_walk(hypergraph: HyperGraph, self_links: bool) -> Multilay
     nodes, edges, weights = hypergraph
 
     gamma_ = gamma(weights)
+    pi_alpha_ = pi_alpha(weights)
     delta_ = delta(weights)
     E_ = E(edges)
     edges_ = {edge.id: edge for edge in edges}
@@ -102,27 +103,29 @@ def create_similarity_walk(hypergraph: HyperGraph, self_links: bool) -> Multilay
 
     similarity = make_js_similarity(gamma_)
 
-    for e1, e2 in product(edges, edges):
-        for u, v in product(e1.nodes, e2.nodes):
+    for alpha, beta in product(edges, edges):
+        for u, v in product(alpha.nodes, beta.nodes):
             if not self_links and u.id == v.id:
                 continue
 
-            if u not in e2.nodes:
+            if beta.id not in E_(u, v):
                 continue
 
             E_u = {edges_[edge] for edge in E_(u)}
 
-            j_alpha = sum(similarity(e1, beta_) * beta_.omega for beta_ in E_u)
-            j_alpha_beta = similarity(e1, e2)
+            S_alpha = sum(similarity(alpha, beta_) * beta_.omega for beta_ in E_u)
+            D_alpha_beta = similarity(alpha, beta) * beta.omega
 
-            delta_e = delta_(e2) if self_links else delta_(e2) - gamma_(e2, u)
+            delta_e = delta_(beta) if self_links else delta_(beta) - gamma_(beta, u)
 
-            weight = j_alpha_beta * e2.omega / j_alpha * gamma_(e2, v) / delta_e
+            P_uv = D_alpha_beta / S_alpha * gamma_(beta, v) / delta_e
 
-            if weight < 1e-10:
+            if P_uv < 1e-10:
                 continue
 
-            links.append((e1.id, u.id, e2.id, v.id, weight))
+            weight = pi_alpha_(alpha, u) * P_uv
+
+            links.append((alpha.id, u.id, beta.id, v.id, weight))
 
     links = [((e1, u), (e2, v), w)
              for e1, u, e2, v, w in sorted(links)]
