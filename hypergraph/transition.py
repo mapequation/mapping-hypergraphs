@@ -80,31 +80,6 @@ def gamma(weights: Iterable[Gamma]) -> Callable[[HyperEdge, Node], float]:
     return inner
 
 
-def p(edges: Iterable[HyperEdge], weights: Iterable[Gamma]) \
-        -> Callable[[HyperEdge, Node, HyperEdge, Node, bool], float]:
-    """
-    Transition probability to go from vertex u in edge e1 to vertex v in vertex e2.
-
-    .. math::
-
-        p_{u,v) = \frac{ \gamma_{e_2}(v) }{ \delta(e_2) } \frac{ \omega(e_2) } { d(u) }
-    """
-    print("[transition] pre-calculating probabilities...")
-    gamma_ = gamma(weights)
-    delta_ = delta(weights)
-    d_ = d(edges)
-
-    def inner(_: HyperEdge, u: Node, e2: HyperEdge, v: Node, self_links: bool = False) -> float:
-        if u not in e2.nodes:
-            return 0
-
-        delta_e = delta_(e2) if self_links else delta_(e2) - gamma_(e2, u)
-
-        return gamma_(e2, v) / delta_e * e2.omega / d_(u)
-
-    return inner
-
-
 def pi(edges: Iterable[HyperEdge], weights: Iterable[Gamma]):
     E_ = E(edges)
     gamma_ = gamma(weights)
