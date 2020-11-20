@@ -5,7 +5,7 @@ from infomap import Infomap
 
 from hypergraph import representation
 from hypergraph.components import largest_connected_component
-from hypergraph.network import HyperGraph, Network
+from hypergraph.network import HyperGraph, Network, remove_simple_hyperedges
 
 _DEFAULT_SEED = 123
 _DEFAULT_TELEPORTATION_PROB = 0.15
@@ -43,21 +43,6 @@ def run_infomap(basename: str,
     im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
     print(f"[infomap] codelength {im.codelength}")
     print(f"[infomap] num top modules {im.num_top_modules}")
-
-
-def remove_simple_hyperedges(hypergraph: HyperGraph) -> HyperGraph:
-    nodes, edges, weights = hypergraph
-
-    edges_ = [edge for edge in edges if len(edge.nodes) > 1]
-    nodes_ = set()
-    weights_ = []
-
-    for edge in edges_:
-        nodes_.update(edge.nodes)
-        weights_.extend(weight for weight in weights
-                        if weight.edge == edge.id)
-
-    return HyperGraph(list(nodes_), edges_, weights_)
 
 
 def run(file,

@@ -149,3 +149,18 @@ def missing_weights(edges: Sequence[HyperEdge], weights: Sequence[Gamma]) -> Set
     all_nodes = {(edge.id, node) for edge in edges for node in edge.nodes}
 
     return all_nodes - found_weights
+
+
+def remove_simple_hyperedges(hypergraph: HyperGraph) -> HyperGraph:
+    nodes, edges, weights = hypergraph
+
+    edges_ = [edge for edge in edges if len(edge.nodes) > 1]
+    nodes_ = set()
+    weights_ = []
+
+    for edge in edges_:
+        nodes_.update(edge.nodes)
+        weights_.extend(weight for weight in weights
+                        if weight.edge == edge.id)
+
+    return HyperGraph(list(nodes_), edges_, weights_)
