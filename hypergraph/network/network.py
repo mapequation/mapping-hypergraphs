@@ -116,6 +116,12 @@ class BipartiteNetwork(Network):
 
 @dataclass
 class BipartiteStateNetwork(BipartiteNetwork, StateNetwork):
+    @property
+    def bipartite_start_id(self) -> int:
+        feature_start_id = super().bipartite_start_id
+        return min(state_id for state_id, node_id in self.states
+                   if node_id == feature_start_id)
+
     def apply(self, infomap):
         infomap.set_names(self.nodes)
         infomap.set_names(self.features)
