@@ -5,42 +5,57 @@ from infomap import Infomap
 
 from hypergraph import representation
 from hypergraph.components import largest_connected_component
-from hypergraph.network import HyperGraph, Network, remove_simple_hyperedges
+from hypergraph.network import HyperGraph, Network, remove_simple_hyperedges, Tree, StateNetwork
 
 _DEFAULT_SEED = 123
 _DEFAULT_TELEPORTATION_PROB = 0.15
 
 
-def run_infomap(basename: str,
-                outdir: str,
-                network: Network,
+def run_infomap(network: Network,
+                basename: Optional[str] = None,
+                outdir: Optional[str] = None,
                 args: Optional[str] = None,
                 directed: bool = True,
                 self_links: bool = False,
                 no_infomap: bool = False,
                 two_level: bool = False,
+                output_states: bool = True,
                 seed: int = _DEFAULT_SEED,
+                num_trials: int = 1,
+                silent: bool = False,
                 teleportation_probability: float = _DEFAULT_TELEPORTATION_PROB,
                 **_):
     if no_infomap:
         return
 
-    filename = basename + (f"_seed_{seed}" if seed != _DEFAULT_SEED else "")
-
-    default_args = " --num-trials 20 --silent -o states"
+    default_args = f" --num-trials {num_trials}"
+    default_args += " --silent" if silent else ""
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
     default_args += f" --seed {seed}"
     default_args += f" --teleportation-probability {teleportation_probability}"
-    default_args += f" --out-name {filename} "
-    default_args += outdir
+
+    filename = None
+
+    if basename is not None:
+        filename = basename + (f"_seed_{seed}" if seed != _DEFAULT_SEED else "")
+        default_args += f" --out-name {filename} "
+
+    if outdir is not None:
+        if output_states:
+            default_args += " -o states "
+
+        default_args += outdir
 
     print("[infomap] running infomap...")
     im = Infomap((args if args else '') + default_args)
     network.apply(im)
     im.run()
-    im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
+
+    if filename is not None:
+        im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
+
     print(f"[infomap] codelength {im.codelength}")
     print(f"[infomap] num top modules {im.num_top_modules}")
 
@@ -57,6 +72,7 @@ def run(file,
         self_links=False,
         write_network=False,
         largest_cc=False,
+        pre_cluster_multilayer=True,
         **kwargs) -> Optional[Network]:
     hypergraph = HyperGraph.from_iter(file.readlines())
 
@@ -65,6 +81,8 @@ def run(file,
 
     hypergraph = remove_simple_hyperedges(hypergraph)
 
+    args = None
+
     if multilayer or multilayer_similarity:
         network = representation.multilayer(hypergraph, multilayer_similarity, self_links=self_links)
 
@@ -72,7 +90,32 @@ def run(file,
         basename += "_similarity" if multilayer_similarity else ""
         basename += "_self_links" if self_links else ""
 
+        if pre_cluster_multilayer:
+            unipartite = representation.unipartite(hypergraph, directed=True, self_links=self_links)
+
+            unipartite_basename = "multilayer_flattened"
+
+            # Optimize the unipartite projection
+            run_infomap(unipartite, unipartite_basename, path.join(outdir, "multilayer"), self_links=self_links,
+                        output_states=False, **kwargs)
+
+            unipartite_tree = Tree.from_file(path.join(path.join(outdir, "multilayer"), unipartite_basename + ".ftree"))
+
+            # Run infomap without optimizing to get the tree and state network
+            run_infomap(network, basename, outdir, self_links=self_links, output_states=True,
+                        args="--no-infomap", num_trials=1, **kwargs)
+
+            multilayer_tree = Tree.from_file(path.join(outdir, basename + ".ftree"))
+            multilayer_tree.match_ids((unipartite_tree,))
+
+            unipartite_tree.write()
+            args = f"--cluster-data {unipartite_tree.filename}"
+
+            network = StateNetwork.from_file(path.join(outdir, basename + "_states.net"))
+
     elif bipartite or bipartite_non_backtracking:
+        args = "--bipartite-teleportation"
+
         network = representation.bipartite(hypergraph, bipartite_non_backtracking)
 
         basename = outfile if outfile else "bipartite"
@@ -93,12 +136,9 @@ def run(file,
         with open(network_filename, "w") as fp:
             network.write(fp)
 
-    args = "--bipartite-teleportation" \
-        if bipartite or bipartite_non_backtracking else None
-
-    run_infomap(basename,
+    run_infomap(network,
+                basename,
                 outdir,
-                network,
                 args=args,
                 directed=not unipartite_undirected,
                 self_links=self_links,
