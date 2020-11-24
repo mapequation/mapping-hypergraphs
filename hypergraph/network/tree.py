@@ -98,6 +98,7 @@ def pretty_filename(filename: str) -> str:
 
 @dataclass
 class Tree:
+    header: Optional[str]
     nodes: List[TreeNode]
     is_bipartite: bool = False
     is_multilayer: bool = False
@@ -113,32 +114,50 @@ class Tree:
 
         return pretty_filename(self.filename)
 
-    def write(self, fp: TextIO):
+    def write(self, fp: Optional[TextIO] = None):
+        did_open = fp is None
+
+        if did_open:
+            fp = open(self.filename, "w")
+
+        if self.header is not None:
+            fp.write(self.header)
+
         for node in self.nodes:
             node.write(fp)
 
+        if did_open:
+            fp.close()
+
     @classmethod
-    def parse_header(cls, lines: Iterable[str]) -> Tuple[float, int, int]:
-        header = takewhile(lambda line: line.startswith("#"), lines)
+    def parse_header(cls, lines: Iterable[str]) -> Tuple[float, int, int, Optional[str]]:
+        try:
+            header = list(takewhile(lambda line: line.startswith("#"), lines))
+        except StopIteration:
+            pass
+
+        if len(header) == 0:
+            return 0.0, 0, 0, None
 
         # partitioned into 4 levels with 286 top modules
-        line = next(filter(lambda line: line.startswith("# partitioned into"), header)).split()
+        line = next(filter(lambda line: line.startswith("# partitioned into"), header), "").split()
         levels, num_top_modules = int(line[3]), int(line[6])
 
         # codelength 3.11764 bits
-        line = next(filter(lambda line: line.startswith("# codelength"), header)).split()
+        line = next(filter(lambda line: line.startswith("# codelength"), header), "").split()
         codelength = float(line[2])
 
-        return codelength, levels, num_top_modules
+        return codelength, levels, num_top_modules, "".join(header)
 
     @classmethod
     def from_file(cls, filename: str, **kwargs):  # -> Tree
         with open(filename) as fp:
             lines = fp.readlines()
 
-            codelength, levels, num_top_modules = cls.parse_header(lines)
+            codelength, levels, num_top_modules, header = cls.parse_header(lines)
 
             return cls.from_iter(lines,
+                                 header,
                                  filename=filename,
                                  levels=levels,
                                  num_top_modules=num_top_modules,
@@ -153,6 +172,7 @@ class Tree:
     @classmethod
     def from_iter(cls,
                   iterable: Iterable[str],
+                  header: Optional[str],
                   node_filter: Optional[Callable[[str], bool]] = is_feature_node,
                   **kwargs):
         no_commented_lines = dropwhile(lambda line: line.startswith("#"), iterable)
@@ -161,7 +181,7 @@ class Tree:
         if node_filter:
             nodes = filterfalse(node_filter, nodes)
 
-        return cls(list(map(TreeNode.from_str, nodes)), **kwargs)
+        return cls(header, list(map(TreeNode.from_str, nodes)), **kwargs)
 
     @property
     def assignments(self) -> List[int]:
