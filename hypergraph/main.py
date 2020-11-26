@@ -21,8 +21,8 @@ def run_infomap(network: Network,
                 two_level: bool = False,
                 output_states: bool = True,
                 seed: int = _DEFAULT_SEED,
-                num_trials: int = 1,
-                silent: bool = False,
+                num_trials: int = 20,
+                silent: bool = True,
                 teleportation_probability: float = _DEFAULT_TELEPORTATION_PROB,
                 **_):
     if no_infomap:
@@ -72,7 +72,7 @@ def run(file,
         self_links=False,
         write_network=False,
         largest_cc=False,
-        pre_cluster_multilayer=True,
+        pre_cluster_multilayer=False,
         **kwargs) -> Optional[Network]:
     hypergraph = HyperGraph.from_iter(file.readlines())
 
@@ -109,7 +109,7 @@ def run(file,
             multilayer_tree.match_ids((unipartite_tree,))
 
             unipartite_tree.write()
-            args = f"--cluster-data {unipartite_tree.filename}"
+            args = f"--cluster-data {unipartite_tree.filename} -F"
 
             network = StateNetwork.from_file(path.join(outdir, basename + "_states.net"))
 
