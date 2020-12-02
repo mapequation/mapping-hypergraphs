@@ -20,7 +20,7 @@ minimal: clean weighted_representations
 .PHONY: example_for_paper
 
 example_for_paper: INPUT := $(DATA)/example-paper.txt
-example_for_paper: FLAGS := -w --teleportation-probability 0.15 $(ARGS)
+example_for_paper: FLAGS := -w -2 --teleportation-probability 0.15 $(ARGS)
 example_for_paper: clean weighted_representations
 
 # REFERENCES
