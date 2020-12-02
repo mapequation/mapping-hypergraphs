@@ -24,7 +24,7 @@ def run_infomap(network: Network,
                 num_trials: int = 20,
                 silent: bool = True,
                 teleportation_probability: float = _DEFAULT_TELEPORTATION_PROB,
-                **_):
+                **_) -> Infomap:
     if no_infomap:
         return
 
@@ -58,6 +58,8 @@ def run_infomap(network: Network,
 
     print(f"[infomap] codelength {im.codelength}")
     print(f"[infomap] num top modules {im.num_top_modules}")
+
+    return im
 
 
 def run(file,
