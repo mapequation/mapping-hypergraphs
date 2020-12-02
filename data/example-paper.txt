@@ -6,29 +6,29 @@
 4 "d"
 5 "e"
 6 "f"
-7 "g"
+7 "i"
 8 "h"
-9 "i"
+9 "g"
 10 "j"
 *Hyperedges
 # id nodes... omega
 # top
-1 1 2 3 2
+1 1 2 3 3
 # left
-2 4 5 6 2
+2 4 5 6 1
 # middle
 3 3 6 9 2
 # right
-4 7 8 9 1
+4 7 8 9 3
 # right overlapping
-5 7 8 9 10 1
+5 7 8 9 10 3
 *Weights
 1 1 2
 1 3 2
 2 4 2
 2 6 2
 3 3 2
-3 9 2
+3 6 2
 4 7 2
 4 9 2
 5 7 2
