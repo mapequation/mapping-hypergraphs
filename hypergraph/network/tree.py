@@ -30,11 +30,13 @@ class TreeNode:
     layer_id: Optional[int] = None
 
     def write(self, fp: TextIO):
-        fp.write("{} {} \"{}\" {} {}\n".format(":".join(map(str, self.path)),
-                                               self.flow,
-                                               self.name,
-                                               self.state_id if self.state_id is not None else self.id,
-                                               self.id))
+        fp.write("{} {} \"{}\"".format(":".join(map(str, self.path)), self.flow, self.name))
+        if self.state_id is not None:
+            fp.write(f" {self.state_id}")
+        fp.write(f" {self.id}")
+        if self.layer_id is not None:
+            fp.write(f" {self.layer_id}")
+        fp.write("\n")
 
     @property
     def top_module(self) -> int:
