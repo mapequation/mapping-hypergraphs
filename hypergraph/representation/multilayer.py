@@ -73,7 +73,7 @@ def make_js_similarity(gamma: Callable[[HyperEdge, Node], float]) -> SimilarityM
         return jsd
 
     def js_similarity(e1: HyperEdge, e2: HyperEdge) -> float:
-        num_nodes = len(set(elem[1] for elem in e1.nodes | e2.nodes))
+        num_nodes = len(set(node.id for node in e1.nodes | e2.nodes))
 
         j = defaultdict(lambda: len(j))
 
