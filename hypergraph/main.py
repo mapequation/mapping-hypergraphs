@@ -25,14 +25,12 @@ def run_infomap(network: Network,
                 silent: bool = True,
                 teleportation_probability: float = _DEFAULT_TELEPORTATION_PROB,
                 **_) -> Infomap:
-    if no_infomap:
-        return
-
-    default_args = f" --num-trials {num_trials}"
+    default_args = f" --num-trials {num_trials if not no_infomap else 1}"
     default_args += " --silent" if silent else ""
     default_args += " --directed" if directed else ""
     default_args += " --include-self-links" if self_links else ""
     default_args += " --two-level" if two_level else ""
+    default_args += " --no-infomap" if no_infomap else ""
     default_args += f" --seed {seed}"
     default_args += f" --teleportation-probability {teleportation_probability}"
 
