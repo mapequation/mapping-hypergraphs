@@ -8,6 +8,7 @@ from itertools import filterfalse, takewhile, dropwhile
 from operator import attrgetter
 from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO, Mapping
 
+from infomap import Infomap
 from scipy.stats import entropy
 
 from hypergraph.network import StateNetwork
@@ -184,6 +185,18 @@ class Tree:
             nodes = filterfalse(node_filter, nodes)
 
         return cls(header, list(map(TreeNode.from_str, nodes)), **kwargs)
+
+    @classmethod
+    def from_infomap(cls, im: Infomap, states=True, **kwargs):  # -> Tree:
+        tmp_filename = "/tmp/1nf0m4p.tree"
+
+        im.write_tree(tmp_filename, states)
+
+        self = cls.from_file(tmp_filename, **kwargs)
+
+        os.remove(tmp_filename)
+
+        return self
 
     @property
     def assignments(self) -> Mapping[str, int]:
