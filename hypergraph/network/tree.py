@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import filterfalse, takewhile, dropwhile
 from operator import attrgetter
-from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO
+from typing import Tuple, Optional, Iterable, List, Callable, Dict, Sequence, TextIO, Mapping
 
 from scipy.stats import entropy
 
@@ -186,25 +186,24 @@ class Tree:
         return cls(header, list(map(TreeNode.from_str, nodes)), **kwargs)
 
     @property
-    def assignments(self) -> List[int]:
+    def assignments(self) -> Mapping[str, int]:
         assignments_ = defaultdict(set)
 
         for node in self.nodes:
-            assignments_[node.id].add(node.module)
+            assignments_[node.name].add(node.module)
 
-        return sorted(map(len, assignments_.values()), reverse=True)
+        return {name: len(assignments)
+                for name, assignments in assignments_.items()}
 
     @property
-    def effective_assignments(self) -> List[float]:
+    def effective_assignments(self) -> Mapping[str, float]:
         assignments_ = defaultdict(lambda: defaultdict(int))
 
         for node in self.nodes:
-            assignments_[node.id][node.module] += 1
+            assignments_[node.name][node.module] += 1
 
-        effective_assignments_ = (2 ** entropy(list(node_assignments.values()), base=2)
-                                  for node_assignments in assignments_.values())
-
-        return sorted(effective_assignments_, reverse=True)
+        return {name: 2 ** entropy(list(node_assignments.values()), base=2)
+                for name, node_assignments in assignments_.items()}
 
     def initial_partition(self, network: StateNetwork) -> Dict[int, int]:
         tree_nodes = {node.id: node for node in self.nodes}

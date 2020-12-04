@@ -20,9 +20,9 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
 
         num_states = len(list(takewhile(lambda line: not line.startswith("*Links"),
                                         dropwhile(lambda line: not line.startswith("# stateId physicalId"),
-                                                  states_lines))))
+                                                  states_lines)))) - 1
 
-        num_links = len(list(dropwhile(lambda line: not line.startswith("*Links"), states_lines)))
+        num_links = len(list(dropwhile(lambda line: not line.startswith("*Links"), states_lines))) - 1
 
         summary["network"].append(network.pretty_filename)
         summary["num states"].append(num_states)
@@ -30,7 +30,7 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
         summary["levels"].append(network.levels)
         summary["top modules"].append(network.num_top_modules)
         summary["codelength"].append(network.codelength)
-        summary["mean assignments"].append(mean(network.assignments))
-        summary["mean eff. assignments"].append(mean(network.effective_assignments))
+        summary["mean assignments"].append(mean(network.assignments.values()))
+        summary["mean eff. assignments"].append(mean(network.effective_assignments.values()))
 
     return pd.DataFrame(data=summary)
