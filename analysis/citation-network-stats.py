@@ -40,6 +40,7 @@ def main(file):
     num_coauthors = [len(edge.nodes) for edge in hypergraph.edges]
 
     print(f"Median coauthors {median(num_coauthors)}")
+    print(f"Mean coauthors {mean(num_coauthors)}")
 
     contributions = defaultdict(int)
 
@@ -47,6 +48,7 @@ def main(file):
         contributions[node.id] += 1
 
     print(f"Mean contributions: {mean(contributions.values())}")
+    print(f"Median contributions: {median(contributions.values())}")
     print(f"Mode contributions: {mode(contributions.values())}")
 
     effective_assignments = defaultdict(list)
