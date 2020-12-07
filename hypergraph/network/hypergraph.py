@@ -2,7 +2,7 @@ import re
 from collections import namedtuple, defaultdict
 from dataclasses import dataclass
 from operator import methodcaller
-from typing import Iterable, List, Tuple, Sequence, Mapping, Dict, Set
+from typing import Iterable, List, Tuple, Sequence, Mapping, Dict, Set, TextIO
 
 from .network import Node
 
@@ -50,6 +50,23 @@ class HyperGraph:
 
     def __iter__(self):
         return iter((self.nodes, self.edges, self.weights))
+
+    def write(self, fp: TextIO):
+        fp.write("*Vertices\n")
+        fp.write("# id name\n")
+        fp.writelines(f"{node.id} \"{node.name}\"\n"
+                      for node in sorted(self.nodes))
+
+        fp.write("*Hyperedges\n")
+        fp.write("# id nodes... omega\n")
+        fp.writelines(f"{edge.id} {' '.join(map(str, (node.id for node in edge.nodes)))} {edge.omega}\n"
+                      for edge in sorted(self.edges))
+
+        fp.write("*Weights\n")
+        fp.write("# edge node gamma\n")
+        fp.writelines(f"{weight.edge} {weight.node.id} {weight.gamma}\n"
+                      for weight in sorted(self.weights)
+                      if weight.gamma != 1)
 
     @classmethod
     def from_iter(cls, lines: Iterable[str]):
