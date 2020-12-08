@@ -180,6 +180,7 @@ def main():
     parser.add_argument("-2", "--two-level", action="store_true",
                         help="only search for two-level partitions")
     parser.add_argument("--no-infomap", action="store_true", help="do not run Infomap")
+    parser.add_argument("--num-trials", default=20, type=int, help="number of times to run Infomap")
     parser.add_argument("-s", "--seed", default=_DEFAULT_SEED, type=int, help="random seed")
     parser.add_argument("-p", "--teleportation-probability", default=_DEFAULT_TELEPORTATION_PROB,
                         type=float, help="probability to teleport in each step")
