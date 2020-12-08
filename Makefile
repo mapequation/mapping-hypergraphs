@@ -40,7 +40,7 @@ references_weighted: INPUT := $(REFS_WEIGHTED)
 references_weighted:
 	@$(MAKE) clean
 	@$(MAKE) $(REFS_WEIGHTED)
-	@$(MAKE) weighted_representations FLAGS="--largest-cc $(ARGS)"
+	@$(MAKE) weighted_representations FLAGS="--num-trials 100 --largest-cc $(ARGS)"
 
 
 # SEEDS
