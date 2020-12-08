@@ -36,12 +36,6 @@ $(REFS):
 $(REFS_WEIGHTED):
 	python -m references --omega log-citations --gamma-weighted $(TEX_FILE) $(REFS_WEIGHTED)
 
-references: INPUT := $(REFS)
-references:
-	@$(MAKE) clean
-	@$(MAKE) $(REFS)
-	@$(MAKE) all_representations FLAGS="--largest-cc $(ARGS)"
-
 references_weighted: INPUT := $(REFS_WEIGHTED)
 references_weighted:
 	@$(MAKE) clean
