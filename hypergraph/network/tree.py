@@ -266,6 +266,20 @@ class Tree:
 
         return Tree(sorted(mapped_nodes, key=attrgetter("path")))
 
+    def physical_nodes(self, level=1):
+        phys_nodes: Dict[str, Dict[int, TreeNode]] = defaultdict(dict)
+
+        for node in self.nodes:
+            module = ":".join(map(str, node.path[0:level]))
+            if node.id not in phys_nodes[module]:
+                phys_nodes[module][node.id] = TreeNode(node.path[0:level], node.flow, node.name, node.id)
+
+            else:
+                phys_node = phys_nodes[module][node.id]
+                phys_node.flow += node.flow
+
+        return dict(phys_nodes)
+
     def match_ids(self, networks) -> None:
         for network in networks:
             if network is self:
