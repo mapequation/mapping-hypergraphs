@@ -52,7 +52,15 @@ def run_infomap(network: Network,
     im.run()
 
     if filename is not None:
-        im.write_flow_tree(path.join(outdir, filename) + ".ftree", states=True)
+        outname = path.join(outdir, filename) + ".ftree"
+        im.write_flow_tree(outname, states=True)
+
+        with open(outname, "r") as fp:
+            original = fp.read()
+        with open(outname, "w") as fp:
+            fp.write(f"# codelengths {','.join(map(str, im.codelengths))}\n")
+            fp.write(f"# num leaf modules {im.num_leaf_modules}\n")
+            fp.write(original)
 
     print(f"[infomap] codelength {im.codelength}")
     print(f"[infomap] num top modules {im.num_top_modules}")
