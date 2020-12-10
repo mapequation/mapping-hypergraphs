@@ -108,7 +108,10 @@ class Tree:
     filename: Optional[str] = None
     levels: Optional[int] = None
     num_top_modules: Optional[int] = None
+    num_leaf_modules: Optional[int] = None
     codelength: Optional[float] = None
+    codelengths: Optional[Tuple[float]] = None
+    completed_in: Optional[float] = None
 
     @property
     def pretty_filename(self) -> str:
@@ -133,38 +136,59 @@ class Tree:
             fp.close()
 
     @classmethod
-    def parse_header(cls, lines: Iterable[str]) -> Tuple[float, int, int, Optional[str]]:
+    def parse_header(cls, lines: Iterable[str]) \
+            -> Tuple[float,
+                     Optional[Tuple[float]],
+                     float,
+                     int,
+                     int,
+                     Optional[int],
+                     Optional[str]]:
         try:
             header = list(takewhile(lambda line: line.startswith("#"), lines))
         except StopIteration:
             pass
 
         if len(header) == 0:
-            return 0.0, 0, 0, None
+            return 0.0, None, 0.0, 0, 0, None, None
+
+        line = next(filter(lambda line: line.startswith("# codelengths"), header), "").split()
+        codelengths = tuple(map(float, line[2].split(",")))
+
+        line = next(filter(lambda line: line.startswith("# num leaf modules"), header), "").split()
+        num_leaf_modules = int(line[4])
+
+        # completed in 2.49655 s
+        line = next(filter(lambda line: line.startswith("# completed in"), header), "").split()
+        completed_in = float(line[3])
 
         # partitioned into 4 levels with 286 top modules
         line = next(filter(lambda line: line.startswith("# partitioned into"), header), "").split()
         levels, num_top_modules = int(line[3]), int(line[6])
 
         # codelength 3.11764 bits
-        line = next(filter(lambda line: line.startswith("# codelength"), header), "").split()
+        line = next(filter(lambda line: line.startswith("# codelength "), header), "").split()
         codelength = float(line[2])
 
-        return codelength, levels, num_top_modules, "".join(header)
+        return codelength, codelengths, completed_in, levels, num_top_modules, num_leaf_modules, "".join(header)
 
     @classmethod
     def from_file(cls, filename: str, **kwargs):  # -> Tree
         with open(filename) as fp:
             lines = fp.readlines()
 
-            codelength, levels, num_top_modules, header = cls.parse_header(lines)
+            codelength, codelenghts, completed_in, levels, num_top_modules, num_leaf_modules, header = \
+                cls.parse_header(lines)
 
             return cls.from_iter(lines,
                                  header,
                                  filename=filename,
                                  levels=levels,
                                  num_top_modules=num_top_modules,
+                                 num_leaf_modules=num_leaf_modules,
                                  codelength=codelength,
+                                 codelengths=codelenghts,
+                                 completed_in=completed_in,
                                  **kwargs)
 
     @classmethod
