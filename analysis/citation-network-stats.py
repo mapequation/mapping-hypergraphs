@@ -63,8 +63,17 @@ def main(file):
 
     effective_assignments = dict(sorted(effective_assignments.items(), key=lambda x: mean(x[1]), reverse=True))
 
+    print(f"Num overlapping: {len(effective_assignments)}")
+
     for name, assignments in effective_assignments.items():
         print(f"{name:23}", assignments)
+
+    mean_assignments = {
+        i: mean(a[i] for a in effective_assignments.values())
+        for i in range(4)
+    }
+
+    print(f"Mean assignments: {mean_assignments = }")
 
 
 if __name__ == "__main__":
