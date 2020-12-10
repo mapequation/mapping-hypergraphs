@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from itertools import takewhile, dropwhile
-from statistics import mean
+from statistics import mean, variance
 from typing import Sequence
 
 import pandas as pd
@@ -29,7 +29,10 @@ def summarize(networks: Sequence[Tree]) -> pd.DataFrame:
         summary["num links"].append(num_links)
         summary["levels"].append(network.levels)
         summary["top modules"].append(network.num_top_modules)
+        summary["leaf modules"].append(network.num_leaf_modules)
         summary["codelength"].append(network.codelength)
+        summary["variance"].append(variance(network.codelengths))
+        summary["completed in"].append(network.completed_in)
         summary["mean assignments"].append(mean(network.assignments.values()))
         summary["mean eff. assignments"].append(mean(network.effective_assignments.values()))
 
