@@ -44,14 +44,17 @@ class TreeNode:
         return self.path[0]
 
     @property
-    def module(self) -> str:
+    def leaf_module(self) -> str:
         return ":".join(map(str, self.path[:-1]))
 
     def level(self, level: Level):
-        if level == Level.TOP_MODULE:
+        # https://bugs.python.org/issue30545
+        if level.value == Level.TOP_MODULE.value:
             return self.top_module
-
-        return self.module
+        elif level.value == Level.LEAF_MODULE.value:
+            return self.leaf_module
+        else:
+            raise NotImplementedError(f"Must be either top or leaf module, not {level=}.")
 
     @classmethod
     def from_str(cls, line: str):
@@ -227,7 +230,7 @@ class Tree:
         assignments_ = defaultdict(set)
 
         for node in self.nodes:
-            assignments_[node.name].add(node.module)
+            assignments_[node.name].add(node.leaf_module)
 
         return {name: len(assignments)
                 for name, assignments in assignments_.items()}
@@ -237,7 +240,7 @@ class Tree:
         assignments_ = defaultdict(lambda: defaultdict(int))
 
         for node in self.nodes:
-            assignments_[node.name][node.module] += 1
+            assignments_[node.name][node.leaf_module] += 1
 
         return {name: 2 ** entropy(list(node_assignments.values()), base=2)
                 for name, node_assignments in assignments_.items()}
