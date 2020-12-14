@@ -86,6 +86,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let pi_alpha = pi_alpha;
 
+    let edge_by_id: HashMap<EdgeId, _> = hypergraph.edges.iter()
+        .map(|edge| (edge.id, edge))
+        .collect();
+
     // bipartite
     println!("Generating bipartite...");
     let bipartite_start_id = hypergraph.nodes.iter().max_by_key(|node| node.id).unwrap().id + 1;
@@ -221,10 +225,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
 
-    let edge_by_id: HashMap<EdgeId, _> = hypergraph.edges.iter()
-        .map(|edge| (edge.id, edge))
-        .collect();
-
     for edge in &hypergraph.edges {
         for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
             let gamma_e_v = gamma.get(&(edge.id, *v)).unwrap_or(&DEFAULT_GAMMA);
@@ -319,33 +319,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     writeln!(f, "*Multilayer");
 
-    for (alpha, beta) in iproduct!(&hypergraph.edges, &hypergraph.edges) {
-        println!("{} {}", alpha.id, beta.id);
-        for (u, v) in iproduct!(&alpha.nodes, &beta.nodes) {
-            let E_u_v: Vec<_> = E[u].intersection(&E[v]).collect();
-
-            if !E_u_v.contains(&&beta.id) {
-                continue;
-            }
-
-            let gamma_e_v = gamma.get(&(beta.id, *v)).unwrap_or(&DEFAULT_GAMMA);
+    for alpha in &hypergraph.edges {
+        for u in &alpha.nodes {
             let d_u = d.get(&u).unwrap();
-            let delta_e = delta.get(&beta.id).unwrap_or(&1.0);
-            let P_uv = beta.omega / d_u * gamma_e_v / delta_e;
+            let pi_alpha_u = pi_alpha[&(alpha.id, *u)];
 
-            let weight = pi_alpha[&(alpha.id, *u)] * P_uv;
+            
 
-            if weight < 1e-10 {
-                continue;
+            for beta in E[u].iter().map(|e| edge_by_id[e]) {
+                for v in &beta.nodes {
+                    let gamma_e_v = gamma.get(&(beta.id, *v)).unwrap_or(&DEFAULT_GAMMA);
+                    let delta_e = delta.get(&beta.id).unwrap_or(&1.0);
+                    let P_uv = beta.omega / d_u * gamma_e_v / delta_e;
+
+                    let weight = pi_alpha_u * P_uv;
+
+                    if weight < 1e-10 {
+                        continue;
+                    }
+
+                    links.push(MultilayerLink {
+                        layer1: alpha.id,
+                        source: *u,
+                        layer2: beta.id,
+                        target: *v,
+                        weight,
+                    });
+                }
             }
-
-            links.push(MultilayerLink {
-                layer1: alpha.id,
-                source: *u,
-                layer2: beta.id,
-                target: *v,
-                weight,
-            });
         }
     }
 
