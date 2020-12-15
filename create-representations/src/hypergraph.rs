@@ -1,14 +1,11 @@
-use std::convert::TryInto;
 use std::error::Error;
-use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
-
-use itertools::FoldWhile::Continue;
 
 pub type NodeId = usize;
 pub type EdgeId = usize;
 
+#[derive(Clone)]
 pub struct Node {
     pub id: NodeId,
     pub name: String,
@@ -26,13 +23,14 @@ impl FromStr for Node {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split: Vec<&str> = s.splitn(2, ' ').collect();
 
-        let id: NodeId = split[0].parse::<NodeId>()?;
+        let id: NodeId = split[0].parse()?;
         let name: String = String::from(split[1]);
 
         Ok(Self { id, name })
     }
 }
 
+#[derive(Clone)]
 pub struct HyperEdge {
     pub id: EdgeId,
     pub nodes: Vec<NodeId>,
@@ -45,18 +43,19 @@ impl FromStr for HyperEdge {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split: Vec<&str> = s.split_whitespace().collect();
 
-        let id = split.first().unwrap().parse::<EdgeId>()?;
-        let omega = split.last().unwrap().parse::<f64>()?;
+        let id: EdgeId = split.first().unwrap().parse()?;
+        let omega: f64 = split.last().unwrap().parse()?;
 
         let nodes: Vec<NodeId> = split[1..split.len() - 1]
             .iter()
-            .map(|x| x.parse::<NodeId>().unwrap())
+            .map(|node| node.parse().unwrap())
             .collect();
 
         Ok(Self { id, nodes, omega })
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Gamma {
     pub edge: EdgeId,
     pub node: NodeId,
@@ -70,20 +69,10 @@ impl FromStr for Gamma {
         let split: Vec<&str> = s.split_whitespace().collect();
 
         Ok(Self {
-            edge: split[0].parse::<EdgeId>()?,
-            node: split[1].parse::<NodeId>()?,
-            gamma: split[2].parse::<f64>()?,
+            edge: split[0].parse()?,
+            node: split[1].parse()?,
+            gamma: split[2].parse()?,
         })
-    }
-}
-
-impl Default for Gamma {
-    fn default() -> Self {
-        Self {
-            edge: 0,
-            node: 0,
-            gamma: 1.0,
-        }
     }
 }
 
@@ -111,6 +100,7 @@ impl FromStr for Context {
     }
 }
 
+#[derive(Clone)]
 pub struct HyperGraph {
     pub nodes: Vec<Node>,
     pub edges: Vec<HyperEdge>,

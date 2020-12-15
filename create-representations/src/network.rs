@@ -1,4 +1,3 @@
-use std::fmt;
 use std::string::ToString;
 
 pub type NodeId = usize;
@@ -16,7 +15,7 @@ impl ToString for Link {
     }
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct StateNode {
     pub state_id: NodeId,
     pub node_id: NodeId,
