@@ -1,18 +1,16 @@
+use std::convert::TryInto;
 use std::error::Error;
+use std::fmt;
 use std::str::FromStr;
 use std::string::ToString;
-use std::fmt;
 
-enum Context {
-    Vertices,
-    HyperEdges,
-    Weights,
-}
+use itertools::FoldWhile::Continue;
 
-type Id = usize;
+pub type NodeId = usize;
+pub type EdgeId = usize;
 
 pub struct Node {
-    pub id: Id,
+    pub id: NodeId,
     pub name: String,
 }
 
@@ -26,9 +24,9 @@ impl FromStr for Node {
     type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let split: Vec<&str> = s.splitn(2, " ").collect();
+        let split: Vec<&str> = s.splitn(2, ' ').collect();
 
-        let id: Id = split[0].parse::<Id>()?;
+        let id: NodeId = split[0].parse::<NodeId>()?;
         let name: String = String::from(split[1]);
 
         Ok(Self { id, name })
@@ -36,8 +34,8 @@ impl FromStr for Node {
 }
 
 pub struct HyperEdge {
-    pub id: Id,
-    pub nodes: Vec<Id>,
+    pub id: EdgeId,
+    pub nodes: Vec<NodeId>,
     pub omega: f64,
 }
 
@@ -47,18 +45,21 @@ impl FromStr for HyperEdge {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split: Vec<&str> = s.split_whitespace().collect();
 
-        let id = split.first().unwrap().parse::<Id>()?;
+        let id = split.first().unwrap().parse::<EdgeId>()?;
         let omega = split.last().unwrap().parse::<f64>()?;
 
-        let nodes: Vec<Id> = split[1..split.len() - 1].iter().map(|val| val.parse::<Id>().unwrap()).collect();
+        let nodes: Vec<NodeId> = split[1..split.len() - 1]
+            .iter()
+            .map(|x| x.parse::<NodeId>().unwrap())
+            .collect();
 
         Ok(Self { id, nodes, omega })
     }
 }
 
 pub struct Gamma {
-    pub edge: Id,
-    pub node: Id,
+    pub edge: EdgeId,
+    pub node: NodeId,
     pub gamma: f64,
 }
 
@@ -69,8 +70,8 @@ impl FromStr for Gamma {
         let split: Vec<&str> = s.split_whitespace().collect();
 
         Ok(Self {
-            edge: split[0].parse::<Id>()?,
-            node: split[1].parse::<Id>()?,
+            edge: split[0].parse::<EdgeId>()?,
+            node: split[1].parse::<NodeId>()?,
             gamma: split[2].parse::<f64>()?,
         })
     }
@@ -78,7 +79,35 @@ impl FromStr for Gamma {
 
 impl Default for Gamma {
     fn default() -> Self {
-        Self { edge: 0, node: 0, gamma: 1.0 }
+        Self {
+            edge: 0,
+            node: 0,
+            gamma: 1.0,
+        }
+    }
+}
+
+enum Context {
+    Vertices,
+    HyperEdges,
+    Weights,
+}
+
+impl FromStr for Context {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+
+        if lower.starts_with("*vertices") {
+            Ok(Self::Vertices)
+        } else if lower.starts_with("*hyperedges") {
+            Ok(Self::HyperEdges)
+        } else if lower.starts_with("*weights") {
+            Ok(Self::Weights)
+        } else {
+            Err(())
+        }
     }
 }
 
@@ -88,44 +117,36 @@ pub struct HyperGraph {
     pub weights: Vec<Gamma>,
 }
 
-
 impl HyperGraph {
     pub fn new(file: &str) -> Self {
-        let mut node_lines: Vec<String> = vec![];
-        let mut edge_lines: Vec<String> = vec![];
-        let mut weight_lines: Vec<String> = vec![];
+        let mut nodes: Vec<Node> = vec![];
+        let mut edges: Vec<HyperEdge> = vec![];
+        let mut weights: Vec<Gamma> = vec![];
 
         let mut context = None;
 
         for line in file.lines() {
-            if line.starts_with("#") {
+            if line.starts_with('#') {
                 continue;
             }
 
-            if line.to_lowercase().starts_with("*vertices") {
-                context = Some(Context::Vertices);
-                continue;
-            } else if line.to_lowercase().starts_with("*hyperedges") {
-                context = Some(Context::HyperEdges);
-                continue;
-            } else if line.to_lowercase().starts_with("*weights") {
-                context = Some(Context::Weights);
+            if line.starts_with('*') {
+                context = line.parse().ok();
                 continue;
             }
 
-            if let Some(current_context) = &context {
-                match current_context {
-                    Context::Vertices => node_lines.push(line.into()),
-                    Context::HyperEdges => edge_lines.push(line.into()),
-                    Context::Weights => weight_lines.push(line.into()),
-                }
+            match context {
+                Some(Context::Vertices) => nodes.push(line.parse().unwrap()),
+                Some(Context::HyperEdges) => edges.push(line.parse().unwrap()),
+                Some(Context::Weights) => weights.push(line.parse().unwrap()),
+                None => (),
             }
         }
 
-        let nodes = node_lines.iter().map(|line| Node::from_str(line).unwrap()).collect();
-        let edges = edge_lines.iter().map(|line| HyperEdge::from_str(line).unwrap()).collect();
-        let weights = weight_lines.iter().map(|line| Gamma::from_str(line).unwrap()).collect();
-
-        Self { nodes, edges, weights }
+        Self {
+            nodes,
+            edges,
+            weights,
+        }
     }
 }

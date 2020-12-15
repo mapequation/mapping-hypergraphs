@@ -1,8 +1,8 @@
 use std::fmt;
 use std::string::ToString;
 
-type NodeId = usize;
-type LayerId = usize;
+pub type NodeId = usize;
+pub type LayerId = usize;
 
 pub struct Link {
     pub source: NodeId,
@@ -38,6 +38,9 @@ pub struct MultilayerLink {
 
 impl ToString for MultilayerLink {
     fn to_string(&self) -> String {
-        format!("{} {} {} {} {}", self.layer1, self.source, self.layer2, self.target, self.weight)
+        format!(
+            "{} {} {} {} {}",
+            self.layer1, self.source, self.layer2, self.target, self.weight
+        )
     }
 }
