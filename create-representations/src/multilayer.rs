@@ -34,6 +34,16 @@ impl NetworkRepresentation for Multilayer {
             .map(|edge| (edge.id, edge))
             .collect();
 
+        let mut f = BufWriter::new(File::create(outfile)?);
+
+        writeln!(f, "*Vertices")?;
+
+        for node in &hypergraph.nodes {
+            writeln!(f, "{}", node.to_string())?;
+        }
+
+        writeln!(f, "*Multilayer")?;
+
         let mut links = vec![];
 
         for alpha in &hypergraph.edges {
@@ -45,9 +55,7 @@ impl NetworkRepresentation for Multilayer {
                     for v in &beta.nodes {
                         let P_uv = beta.omega / d_u * gamma[&(beta.id, *v)] / delta[&beta.id];
 
-                        let weight = pi_alpha_u * P_uv;
-
-                        if weight < 1e-10 {
+                        if P_uv < 1e-10 {
                             continue;
                         }
 
@@ -56,25 +64,17 @@ impl NetworkRepresentation for Multilayer {
                             source: *u,
                             layer2: beta.id,
                             target: *v,
-                            weight,
+                            weight: pi_alpha_u * P_uv,
                         });
                     }
                 }
             }
-        }
 
-        let mut f = BufWriter::new(File::create(outfile)?);
+            for link in &links {
+                writeln!(f, "{}", link.to_string())?;
+            }
 
-        writeln!(f, "*Vertices")?;
-
-        for node in &hypergraph.nodes {
-            writeln!(f, "{}", node.to_string())?;
-        }
-
-        writeln!(f, "*Multilayer")?;
-
-        for link in links {
-            writeln!(f, "{}", link.to_string())?;
+            links.clear();
         }
 
         Ok(())
