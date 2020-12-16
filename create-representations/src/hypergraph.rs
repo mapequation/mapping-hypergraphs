@@ -88,12 +88,14 @@ impl FromStr for Context {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let lower = s.to_lowercase();
 
+        use Context::*;
+
         if lower.starts_with("*vertices") {
-            Ok(Self::Vertices)
+            Ok(Vertices)
         } else if lower.starts_with("*hyperedges") {
-            Ok(Self::HyperEdges)
+            Ok(HyperEdges)
         } else if lower.starts_with("*weights") {
-            Ok(Self::Weights)
+            Ok(Weights)
         } else {
             Err(())
         }
@@ -109,6 +111,8 @@ pub struct HyperGraph {
 
 impl HyperGraph {
     pub fn new(file: &str) -> Self {
+        use Context::*;
+
         let mut nodes: Vec<Node> = vec![];
         let mut edges: Vec<HyperEdge> = vec![];
         let mut weights: Vec<Gamma> = vec![];
@@ -126,9 +130,9 @@ impl HyperGraph {
             }
 
             match context {
-                Some(Context::Vertices) => nodes.push(line.parse().unwrap()),
-                Some(Context::HyperEdges) => edges.push(line.parse().unwrap()),
-                Some(Context::Weights) => weights.push(line.parse().unwrap()),
+                Some(Vertices) => nodes.push(line.parse().unwrap()),
+                Some(HyperEdges) => edges.push(line.parse().unwrap()),
+                Some(Weights) => weights.push(line.parse().unwrap()),
                 None => (),
             }
         }

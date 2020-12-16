@@ -1,92 +1,72 @@
+use crate::config::RandomWalk;
 use crate::hypergraph::{HyperGraph, NodeId};
+use crate::preprocess::PreprocessResult;
+use crate::representation::NetworkRepresentation;
+use itertools::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
 
-use crate::preprocess::PreprocessResult;
-use itertools::*;
+pub struct Unipartite;
 
-pub fn create(hypergraph: HyperGraph, values: PreprocessResult) -> std::io::Result<()> {
-    println!("Generating unipartite with self-links...");
+impl NetworkRepresentation for Unipartite {
+    fn create(
+        hypergraph: &HyperGraph,
+        preprocessed: &PreprocessResult,
+        randomWalk: RandomWalk,
+        outfile: &str,
+    ) -> std::io::Result<()> {
+        println!("Generating unipartite...");
 
-    let PreprocessResult {
-        d,
-        gamma,
-        delta,
-        pi,
-        ..
-    } = values;
+        let PreprocessResult {
+            d,
+            gamma,
+            delta,
+            pi,
+            ..
+        } = preprocessed;
 
-    let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
+        let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
 
-    for edge in &hypergraph.edges {
-        for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
-            let P_uv = edge.omega / d[u] * gamma[&(edge.id, *v)] / delta[&edge.id];
+        use RandomWalk::*;
 
-            let weight = pi[u] * P_uv;
+        for edge in &hypergraph.edges {
+            for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
+                if randomWalk == NonLazy && u == v {
+                    continue;
+                }
 
-            if weight < 1e-10 {
-                continue;
+                let delta_e = if randomWalk == NonLazy {
+                    delta[&edge.id] - gamma[&(edge.id, *u)]
+                } else {
+                    delta[&edge.id]
+                };
+
+                let P_uv = edge.omega / d[u] * gamma[&(edge.id, *v)] / delta_e;
+
+                if P_uv < 1e-10 {
+                    continue;
+                }
+
+                *links.entry((*u, *v)).or_insert(0.0) += pi[u] * P_uv;
             }
-
-            *links.entry((*u, *v)).or_insert(0.0) += weight;
         }
-    }
 
-    let mut f = BufWriter::new(File::create(
-        "../output/unipartite_directed_self_links.net",
-    )?);
+        let mut f = BufWriter::new(File::create(outfile)?);
 
-    writeln!(f, "*Vertices")?;
+        writeln!(f, "*Vertices")?;
 
-    for node in &hypergraph.nodes {
-        writeln!(f, "{}", node.to_string())?;
-    }
-
-    writeln!(f, "*Links")?;
-
-    for ((source, target), weight) in links {
-        writeln!(f, "{} {} {}", source, target, weight)?;
-    }
-
-    // unipartite without self-links
-    println!("Generating unipartite without self-links...");
-
-    let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
-
-    for edge in &hypergraph.edges {
-        for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
-            if u == v {
-                continue;
-            }
-
-            let delta_e = delta[&edge.id] - gamma[&(edge.id, *u)];
-            let P_uv = edge.omega / d[u] * gamma[&(edge.id, *v)] / delta_e;
-
-            let weight = pi[u] * P_uv;
-
-            if weight < 1e-10 {
-                continue;
-            }
-
-            *links.entry((*u, *v)).or_insert(0.0) += weight;
+        for node in &hypergraph.nodes {
+            writeln!(f, "{}", node.to_string())?;
         }
+
+        writeln!(f, "*Links")?;
+
+        for ((source, target), weight) in links {
+            writeln!(f, "{} {} {}", source, target, weight)?;
+        }
+
+        Ok(())
     }
-
-    let mut f = BufWriter::new(File::create("../output/unipartite_directed.net")?);
-
-    writeln!(f, "*Vertices")?;
-
-    for node in &hypergraph.nodes {
-        writeln!(f, "{}", node.to_string())?;
-    }
-
-    writeln!(f, "*Links")?;
-
-    for ((source, target), weight) in links {
-        writeln!(f, "{} {} {}", source, target, weight)?;
-    }
-
-    Ok(())
 }

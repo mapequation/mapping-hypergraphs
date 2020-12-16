@@ -1,13 +1,14 @@
 #![allow(non_snake_case)]
 
-use std::error::Error;
-use std::fs;
-use std::thread;
-use std::{env, process};
-
-use crate::config::Config;
+use crate::bipartite::Bipartite;
+use crate::config::{Config, Representation};
 use crate::hypergraph::HyperGraph;
+use crate::multilayer::Multilayer;
 use crate::preprocess::Preprocess;
+use crate::representation::NetworkRepresentation;
+use crate::unipartite::Unipartite;
+use std::error::Error;
+use std::{env, process};
 
 mod bipartite;
 mod config;
@@ -15,43 +16,45 @@ mod hypergraph;
 mod multilayer;
 mod network;
 mod preprocess;
+mod representation;
 mod unipartite;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let config = Config::new(env::args()).unwrap_or_else(|err| {
-        eprintln!("Error: {}", err);
-        process::exit(1);
-    });
-
-    let file = fs::read_to_string(&config.file).expect("Cannot open file");
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let Config {
+        file,
+        representation,
+        outfile,
+    } = config;
 
     let hypergraph = HyperGraph::new(&file);
 
     let preprocessed = Preprocess::run(&hypergraph);
 
-    let bipartite = thread::spawn({
-        let hypergraph = hypergraph.clone();
-        let preprocessed = preprocessed.clone();
-        || {
-            bipartite::create(hypergraph, preprocessed).unwrap();
+    match representation {
+        Representation::Bipartite(randomWalk) => {
+            Bipartite::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
         }
-    });
-
-    let unipartite = thread::spawn({
-        let hypergraph = hypergraph.clone();
-        let preprocessed = preprocessed.clone();
-        || {
-            unipartite::create(hypergraph, preprocessed).unwrap();
+        Representation::Unipartite(randomWalk) => {
+            Unipartite::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
         }
-    });
+        Representation::Multilayer(randomWalk) => {
+            Multilayer::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
+        }
+    }
 
-    let multilayer = thread::spawn(|| {
-        multilayer::create(hypergraph, preprocessed).unwrap();
-    });
-
-    bipartite.join().unwrap();
-    unipartite.join().unwrap();
-    multilayer.join().unwrap();
+    println!("Done!");
 
     Ok(())
+}
+
+fn main() {
+    let config = Config::new(env::args()).unwrap_or_else(|err| {
+        eprintln!("Error: {}", err);
+        process::exit(1);
+    });
+
+    if let Err(err) = run(config) {
+        eprintln!("Error: {}", err);
+        process::exit(1);
+    }
 }
