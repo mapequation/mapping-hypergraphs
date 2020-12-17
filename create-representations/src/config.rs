@@ -20,6 +20,7 @@ pub enum Representation {
     Bipartite(RandomWalk),
     Unipartite(RandomWalk),
     Multilayer(RandomWalk),
+    HyperEdgeSimilarity(RandomWalk),
 }
 
 impl FromStr for Representation {
@@ -40,6 +41,8 @@ impl FromStr for Representation {
             "-U" => Ok(Unipartite(NonLazy)),
             "-m" => Ok(Multilayer(Lazy)),
             "-M" => Ok(Multilayer(NonLazy)),
+            "-hs" => Ok(HyperEdgeSimilarity(Lazy)),
+            "-HS" => Ok(HyperEdgeSimilarity(NonLazy)),
             _ => Err("No such representation"),
         }
     }

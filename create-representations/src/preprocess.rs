@@ -1,12 +1,12 @@
 use crate::hypergraph::{EdgeId, HyperGraph, NodeId};
 use std::collections::{HashMap, HashSet};
 
-type EdgeSet = HashMap<NodeId, HashSet<EdgeId>>;
-type NodeStrengths = HashMap<NodeId, f64>;
-type NodeWeights = HashMap<(EdgeId, NodeId), f64>;
-type HyperEdgeStrengths = HashMap<EdgeId, f64>;
-type VisitRates = HashMap<NodeId, f64>;
-type StateVisitRates = HashMap<(EdgeId, NodeId), f64>;
+pub type EdgeSet = HashMap<NodeId, HashSet<EdgeId>>;
+pub type NodeStrengths = HashMap<NodeId, f64>;
+pub type NodeWeights = HashMap<(EdgeId, NodeId), f64>;
+pub type HyperEdgeStrengths = HashMap<EdgeId, f64>;
+pub type VisitRates = HashMap<NodeId, f64>;
+pub type StateVisitRates = HashMap<(EdgeId, NodeId), f64>;
 
 #[derive(Clone)]
 pub struct PreprocessResult {

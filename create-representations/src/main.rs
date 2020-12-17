@@ -2,6 +2,7 @@
 
 use crate::bipartite::Bipartite;
 use crate::config::{Config, Representation};
+use crate::hyperedge_similarity::HyperEdgeSimilarity;
 use crate::hypergraph::HyperGraph;
 use crate::multilayer::Multilayer;
 use crate::preprocess::Preprocess;
@@ -12,7 +13,9 @@ use std::{env, process};
 
 mod bipartite;
 mod config;
+mod hyperedge_similarity;
 mod hypergraph;
+mod js_similarity;
 mod multilayer;
 mod network;
 mod preprocess;
@@ -39,6 +42,9 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         }
         Representation::Multilayer(randomWalk) => {
             Multilayer::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
+        }
+        Representation::HyperEdgeSimilarity(randomWalk) => {
+            HyperEdgeSimilarity::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
         }
     }
 
