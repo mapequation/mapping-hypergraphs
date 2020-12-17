@@ -17,7 +17,7 @@ impl NetworkRepresentation for Bipartite {
         randomWalk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()> {
-        println!("Generating bipartite...");
+        println!("Generating {} bipartite...", randomWalk.to_string());
 
         let PreprocessResult { d, gamma, pi, .. } = preprocessed;
 

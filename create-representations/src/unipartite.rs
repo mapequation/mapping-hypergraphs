@@ -17,7 +17,7 @@ impl NetworkRepresentation for Unipartite {
         randomWalk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()> {
-        println!("Generating unipartite...");
+        println!("Generating {} unipartite...", randomWalk.to_string());
 
         let PreprocessResult {
             d,
@@ -29,15 +29,15 @@ impl NetworkRepresentation for Unipartite {
 
         let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
 
-        use RandomWalk::*;
+        let isNonLazy = randomWalk == RandomWalk::NonLazy;
 
         for edge in &hypergraph.edges {
             for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
-                if randomWalk == NonLazy && u == v {
+                if isNonLazy && u == v {
                     continue;
                 }
 
-                let delta_e = if randomWalk == NonLazy {
+                let delta_e = if isNonLazy {
                     delta[&edge.id] - gamma[&(edge.id, *u)]
                 } else {
                     delta[&edge.id]

@@ -7,6 +7,15 @@ pub enum RandomWalk {
     NonLazy,
 }
 
+impl ToString for RandomWalk {
+    fn to_string(&self) -> String {
+        String::from(match self {
+            Self::Lazy => "lazy",
+            Self::NonLazy => "non-lazy",
+        })
+    }
+}
+
 pub enum Representation {
     Bipartite(RandomWalk),
     Unipartite(RandomWalk),
