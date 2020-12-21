@@ -5,6 +5,8 @@ use std::collections::HashMap;
 
 #[inline]
 fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
+    debug_assert_eq!(p.len(), q.len());
+
     -p.iter()
         .zip(q.iter())
         .map(|(p_i, q_i)| {
@@ -19,7 +21,7 @@ fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
 
 #[inline]
 fn js_divergence(p: &[f64], q: &[f64]) -> f64 {
-    assert_eq!(p.len(), q.len());
+    debug_assert_eq!(p.len(), q.len());
 
     let mix: Vec<f64> = p
         .iter()
@@ -29,10 +31,19 @@ fn js_divergence(p: &[f64], q: &[f64]) -> f64 {
 
     let jsd = 0.5 * kl_divergence(&p, &mix) + 0.5 * kl_divergence(&q, &mix);
 
-    assert!(jsd >= 0.0);
-    assert!(jsd - 1.0 < 1.0e-10);
+    debug_assert!(jsd >= 0.0, "jsd = {}", jsd);
+    debug_assert!(jsd <= 1.0 + f64::EPSILON, "jsd = {}", jsd);
 
     jsd
+}
+
+#[inline]
+fn normalize(x: &mut [f64]) {
+    let sum: f64 = x.iter().sum();
+
+    debug_assert!(sum > 0.0);
+
+    x.iter_mut().for_each(|x_i| *x_i /= sum);
 }
 
 #[inline]
@@ -48,32 +59,24 @@ pub fn js_similarity(alpha: &HyperEdge, beta: &HyperEdge, gamma: &NodeWeights) -
 
     let num_nodes = node_index.len();
 
-    let mut p: Vec<f64> = Vec::with_capacity(num_nodes);
-    let mut q: Vec<f64> = Vec::with_capacity(num_nodes);
+    debug_assert_ne!(num_nodes, 0);
 
-    p.resize(num_nodes, 0.0);
-    q.resize(num_nodes, 0.0);
+    let mut X = vec![vec![0.0; num_nodes]; 2];
 
-    for (node_id, node_index) in alpha.nodes.iter().map(|node| (node, &node_index[node])) {
-        p[*node_index] = gamma[&(alpha.id, *node_id)];
-    }
+    [&alpha, &beta].iter().enumerate().for_each(|(i, edge)| {
+        edge.nodes
+            .iter()
+            .map(|node| (&node_index[node], node))
+            .for_each(|(j, node)| X[i][*j] = gamma[&(edge.id, *node)]);
+    });
 
-    for (node_id, node_index) in beta.nodes.iter().map(|node| (node, &node_index[node])) {
-        q[*node_index] = gamma[&(beta.id, *node_id)];
-    }
+    normalize(&mut X[0]);
+    normalize(&mut X[1]);
 
-    let p_sum: f64 = p.iter().sum();
-    let q_sum: f64 = q.iter().sum();
+    debug_assert!((X[0].iter().sum::<f64>() - 1.0).abs() < f64::EPSILON);
+    debug_assert!((X[1].iter().sum::<f64>() - 1.0).abs() < f64::EPSILON);
 
-    for p_i in &mut p {
-        *p_i /= p_sum;
-    }
-
-    for q_i in &mut q {
-        *q_i /= q_sum;
-    }
-
-    1.0 - js_divergence(&p, &q)
+    1.0 - js_divergence(&X[0], &X[1])
 }
 
 #[cfg(test)]
@@ -98,7 +101,7 @@ mod tests {
             omega: 0.0,
         };
 
-        assert_eq!(js_similarity(&alpha, &beta, &gamma), 1.0);
+        assert!((js_similarity(&alpha, &beta, &gamma) - 1.0).abs() < f64::EPSILON);
     }
 
     #[test]
@@ -106,6 +109,6 @@ mod tests {
         let p = [0.5, 0.5];
         let q = [0.5, 0.5];
 
-        assert_eq!(js_divergence(&p, &q), 0.0);
+        assert!(js_divergence(&p, &q).abs() < f64::EPSILON);
     }
 }
