@@ -5,7 +5,7 @@
 Requirements are specified in the included `Pipfile`:
 
 - Python 3.8
-- Infomap Python package 1.2.0
+- Infomap Python package 1.3.0
 
 Install with `pipenv`:
 
@@ -26,6 +26,8 @@ Then, run the code
 ```bash
 python -m hypergraph --help
 ```
+
+See the `Makefile` for example usage.
 
 ## Author
 Anton Eriksson
