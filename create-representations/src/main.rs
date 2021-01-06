@@ -1,13 +1,8 @@
 #![allow(non_snake_case)]
 
-use crate::bipartite::Bipartite;
-use crate::config::{Config, Representation};
-use crate::hyperedge_similarity::HyperEdgeSimilarity;
+use crate::config::Config;
 use crate::hypergraph::HyperGraph;
-use crate::multilayer::Multilayer;
 use crate::preprocess::Preprocess;
-use crate::representation::NetworkRepresentation;
-use crate::unipartite::Unipartite;
 use std::error::Error;
 use std::{env, process};
 
@@ -31,22 +26,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let hypergraph = HyperGraph::new(&file);
 
-    let preprocessed = Preprocess::run(&hypergraph);
-
-    match representation {
-        Representation::Bipartite(randomWalk) => {
-            Bipartite::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
-        }
-        Representation::Unipartite(randomWalk) => {
-            Unipartite::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
-        }
-        Representation::Multilayer(randomWalk) => {
-            Multilayer::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
-        }
-        Representation::HyperEdgeSimilarity(randomWalk) => {
-            HyperEdgeSimilarity::create(&hypergraph, &preprocessed, randomWalk, &outfile)?
-        }
-    }
+    representation.create(&hypergraph, &Preprocess::run(&hypergraph), &outfile)?;
 
     println!("Done!");
 

@@ -1,7 +1,7 @@
 use std::fs;
 use std::str::FromStr;
 
-#[derive(PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum RandomWalk {
     Lazy,
     NonLazy,
@@ -16,6 +16,7 @@ impl ToString for RandomWalk {
     }
 }
 
+#[derive(Copy, Clone)]
 pub enum Representation {
     Bipartite(RandomWalk),
     Unipartite(RandomWalk),
