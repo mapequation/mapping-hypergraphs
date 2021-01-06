@@ -59,7 +59,7 @@ impl NetworkRepresentation for HyperEdgeSimilarity {
 
         let mut links = vec![];
 
-        let is_non_lazy = random_walk == RandomWalk::NonLazy;
+        let is_lazy = random_walk == RandomWalk::Lazy;
 
         for alpha in &hypergraph.edges {
             for u in &alpha.nodes {
@@ -73,14 +73,14 @@ impl NetworkRepresentation for HyperEdgeSimilarity {
                     let D_alpha_beta = D[&(alpha.id, beta.id)];
 
                     for v in &beta.nodes {
-                        if is_non_lazy && u == v {
+                        if !is_lazy && u == v {
                             continue;
                         }
 
-                        let delta_e = if is_non_lazy {
-                            delta[&beta.id] - gamma[&(beta.id, *u)]
-                        } else {
+                        let delta_e = if is_lazy {
                             delta[&beta.id]
+                        } else {
+                            delta[&beta.id] - gamma[&(beta.id, *u)]
                         };
 
                         let P_uv = D_alpha_beta / S_alpha * gamma[&(beta.id, *v)] / delta_e;

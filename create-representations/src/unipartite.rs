@@ -29,18 +29,18 @@ impl NetworkRepresentation for Unipartite {
 
         let mut links: HashMap<(NodeId, NodeId), _> = HashMap::new();
 
-        let is_non_lazy = random_walk == RandomWalk::NonLazy;
+        let is_lazy = random_walk == RandomWalk::Lazy;
 
         for edge in &hypergraph.edges {
             for (u, v) in iproduct!(&edge.nodes, &edge.nodes) {
-                if is_non_lazy && u == v {
+                if !is_lazy && u == v {
                     continue;
                 }
 
-                let delta_e = if is_non_lazy {
-                    delta[&edge.id] - gamma[&(edge.id, *u)]
-                } else {
+                let delta_e = if is_lazy {
                     delta[&edge.id]
+                } else {
+                    delta[&edge.id] - gamma[&(edge.id, *u)]
                 };
 
                 let P_uv = edge.omega / d[u] * gamma[&(edge.id, *v)] / delta_e;

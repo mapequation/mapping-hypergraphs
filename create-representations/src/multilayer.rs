@@ -46,7 +46,7 @@ impl NetworkRepresentation for Multilayer {
 
         let mut links = vec![];
 
-        let is_non_lazy = random_walk == RandomWalk::NonLazy;
+        let is_lazy = random_walk == RandomWalk::Lazy;
 
         for alpha in &hypergraph.edges {
             for u in &alpha.nodes {
@@ -55,14 +55,14 @@ impl NetworkRepresentation for Multilayer {
 
                 for beta in E[u].iter().map(|e| edge_by_id[e]) {
                     for v in &beta.nodes {
-                        if is_non_lazy && u == v {
+                        if !is_lazy && u == v {
                             continue;
                         }
 
-                        let delta_e = if is_non_lazy {
-                            delta[&beta.id] - gamma[&(beta.id, *u)]
-                        } else {
+                        let delta_e = if is_lazy {
                             delta[&beta.id]
+                        } else {
+                            delta[&beta.id] - gamma[&(beta.id, *u)]
                         };
 
                         let P_uv = beta.omega / d_u * gamma[&(beta.id, *v)] / delta_e;
