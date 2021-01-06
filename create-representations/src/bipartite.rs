@@ -14,10 +14,10 @@ impl NetworkRepresentation for Bipartite {
     fn create(
         hypergraph: &HyperGraph,
         preprocessed: &PreprocessResult,
-        randomWalk: RandomWalk,
+        random_walk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()> {
-        println!("Generating {} bipartite...", randomWalk.to_string());
+        println!("Generating {} bipartite...", random_walk.to_string());
 
         let PreprocessResult { d, gamma, pi, .. } = preprocessed;
 
@@ -56,7 +56,7 @@ impl NetworkRepresentation for Bipartite {
             writeln!(f, "{}", node.to_string())?;
         }
 
-        if randomWalk == RandomWalk::Lazy {
+        if random_walk == RandomWalk::Lazy {
             for edge in &hypergraph.edges {
                 for node in &edge.nodes {
                     let P_ue = edge.omega / d[&node];

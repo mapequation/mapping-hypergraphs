@@ -14,10 +14,10 @@ impl NetworkRepresentation for Multilayer {
     fn create(
         hypergraph: &HyperGraph,
         preprocessed: &PreprocessResult,
-        randomWalk: RandomWalk,
+        random_walk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()> {
-        println!("Generating {} multilayer...", randomWalk.to_string());
+        println!("Generating {} multilayer...", random_walk.to_string());
 
         let PreprocessResult {
             E,
@@ -46,7 +46,7 @@ impl NetworkRepresentation for Multilayer {
 
         let mut links = vec![];
 
-        let isNonLazy = randomWalk == RandomWalk::NonLazy;
+        let is_non_lazy = random_walk == RandomWalk::NonLazy;
 
         for alpha in &hypergraph.edges {
             for u in &alpha.nodes {
@@ -55,11 +55,11 @@ impl NetworkRepresentation for Multilayer {
 
                 for beta in E[u].iter().map(|e| edge_by_id[e]) {
                     for v in &beta.nodes {
-                        if isNonLazy && u == v {
+                        if is_non_lazy && u == v {
                             continue;
                         }
 
-                        let delta_e = if isNonLazy {
+                        let delta_e = if is_non_lazy {
                             delta[&beta.id] - gamma[&(beta.id, *u)]
                         } else {
                             delta[&beta.id]

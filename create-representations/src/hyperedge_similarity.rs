@@ -16,12 +16,12 @@ impl NetworkRepresentation for HyperEdgeSimilarity {
     fn create(
         hypergraph: &HyperGraph,
         preprocessed: &PreprocessResult,
-        randomWalk: RandomWalk,
+        random_walk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()> {
         println!(
             "Generating {} hyperedge-similarity...",
-            randomWalk.to_string()
+            random_walk.to_string()
         );
 
         let PreprocessResult {
@@ -59,7 +59,7 @@ impl NetworkRepresentation for HyperEdgeSimilarity {
 
         let mut links = vec![];
 
-        let isNonLazy = randomWalk == RandomWalk::NonLazy;
+        let is_non_lazy = random_walk == RandomWalk::NonLazy;
 
         for alpha in &hypergraph.edges {
             for u in &alpha.nodes {
@@ -73,11 +73,11 @@ impl NetworkRepresentation for HyperEdgeSimilarity {
                     let D_alpha_beta = D[&(alpha.id, beta.id)];
 
                     for v in &beta.nodes {
-                        if isNonLazy && u == v {
+                        if is_non_lazy && u == v {
                             continue;
                         }
 
-                        let delta_e = if isNonLazy {
+                        let delta_e = if is_non_lazy {
                             delta[&beta.id] - gamma[&(beta.id, *u)]
                         } else {
                             delta[&beta.id]

@@ -6,7 +6,7 @@ pub trait NetworkRepresentation {
     fn create(
         hypergraph: &HyperGraph,
         preprocessed: &PreprocessResult,
-        randomWalk: RandomWalk,
+        random_walk: RandomWalk,
         outfile: &str,
     ) -> std::io::Result<()>
     where
