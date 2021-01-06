@@ -23,6 +23,17 @@ cargo run -- representation hypergraph outfile
 Where `representation` can be any of `-[b|B|u|U|m|M|hs|HS]` and the hypergraph
 is in the same format as in the main repository.
 
+| Flag   | Network representation        |
+|--------|-------------------------------|
+| `-b`   | bipartite                     |
+| `-B`   | bipartite non-lazy            |
+| `-u`   | unipartite                    |
+| `-U`   | unipartite non-lazy           |
+| `-m`   | multilayer                    |
+| `-M`   | multilayer non-lazy           |
+| `-hs`  | hyperedge-similarity          |
+| `-HS`  | hyperedge-similarity non-lazy |
+
 See [config.rs](src/config.rs) for more information.
 
 ## Author
