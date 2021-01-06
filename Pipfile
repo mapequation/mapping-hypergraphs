@@ -10,7 +10,7 @@ sklearn = "*"
 seaborn = "*"
 scholarly = "*"
 numba = "*"
-infomap = {path = "./../infomap/build/py"}
+infomap = "1.3.0"
 
 [requires]
 python_version = "3.8"
